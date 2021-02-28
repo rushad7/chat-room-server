@@ -2,3 +2,4 @@ pandas==0.24.2
 pydantic==1.7.3
 fastapi==0.63.0
 uvicorn==0.13.3
+starlette==0.13.6
