@@ -1,3 +1,4 @@
+import hashlib
 import pandas as pd
 from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
@@ -15,17 +16,28 @@ user_db.execute_query(Query.create_user_table)
 message_db = DataBase("messages_db.sqlite")
 message_db.execute_query(Query.create_message_table)
 
+def is_valid_uid(uid: str):
+    query = f"SELECT username, password FROM users WHERE uid='{uid}';"
+    query_response = pd.read_sql_query(query, user_db.connection)
+    if query_response.empty: 
+        return False
+    else: 
+        return True
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials):
-    query = Query.add_user(credentials.username, credentials.password)
+    uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
+    uid_pswd = credentials.password.upper()
+    uid = uid_uname + uid_pswd
+
+    query = Query.add_user(uid, credentials.username, credentials.password)
     user_db.execute_query(query)
     return True
 
 
-@app.post("/checkuser", status_code=status.HTTP_200_OK)
-async def check_user(credentials: UserCredentials):
-    query = f"SELECT username FROM users WHERE username='{credentials.username}';"
+@app.post("/verify", status_code=status.HTTP_200_OK)
+async def verify_user(credentials: UserCredentials):
+    query = f"SELECT username, password FROM users WHERE username='{credentials.username}' AND password='{credentials.password}';"
     query_response = pd.read_sql_query(query, user_db.connection)
     user_exists: bool = not query_response.empty
     return user_exists
@@ -35,8 +47,9 @@ async def check_user(credentials: UserCredentials):
 async def login(credentials: UserCredentials):
     try:
         query = f"SELECT username, password FROM users WHERE username='{credentials.username}';"
-        query_response = pd.read_sql_query(query, user_db)
+        query_response = pd.read_sql_query(query, user_db.connection)
         user_password = query_response.get("password")[0]
+
         if user_password == credentials.password:
             return True
         return False
@@ -45,17 +58,19 @@ async def login(credentials: UserCredentials):
         return False
 
 
-@app.websocket("/chat")
-async def chat_websocket(websocket: WebSocket):
+@app.websocket("/chat/{uid}")
+async def chat_websocket(websocket: WebSocket, uid: str):   
+    
+    await manager.connect(uid, websocket)
+    user_access = is_valid_uid(uid)
 
-    await manager.connect(websocket)
+    if user_access:
+        try:
+            while True:
+                message = await websocket.receive_text()
+                print(message)
+                
+                await manager.broadcast_message(message)
 
-    try:
-        while True:
-            message = await websocket.receive_text()
-            print(message)
-            
-            await manager.broadcast_message(message)
-
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        except WebSocketDisconnect:
+            manager.disconnect(websocket)
