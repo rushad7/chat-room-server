@@ -40,7 +40,7 @@ class Query:
     @staticmethod
     def add_user(uid: str, username: str, password: str) -> str:
         print("User added successfully")
-        return f'''INSERT INTO users (uid, username, password) VALUES ("{uid}", "{username}", "{password}");'''
+        return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
 
 
     @staticmethod
