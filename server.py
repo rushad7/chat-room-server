@@ -59,7 +59,7 @@ async def login(credentials: UserCredentials):
     try:
         query = f"SELECT password FROM users WHERE username='{credentials.username}';"
         query_response = db.read_execute_query(query)
-        user_password = query_response[0]
+        user_password = query_response[0][0]
         print(user_password)
         if user_password == credentials.password:
             return True
