@@ -1,51 +1,54 @@
-import sqlite3
-from sqlite3 import Error
+from typing import List, Dict
+import psycopg2 as pg
+from psycopg2 import OperationalError
 
 
 class DataBase:
 
-    def __init__(self, path) -> None:
+    def __init__(self, db_url: str) -> None:
         connection = None
         try:
-            connection = sqlite3.connect(path)
-            print("Connection to SQLite DB successful")
-        except Error as e:
-            print(f"The error '{e}' occurred")
+            connection = pg.connect(db_url)
+            print("Connection to Database successful")
+        except OperationalError as e:
+            print(e)
 
         self.connection = connection
 
-    def execute_query(self, query):
+    def execute_query(self, query: str) -> None:
+        self.connection.autocommit = True
         cursor = self.connection.cursor()
         try:
             cursor.execute(query)
-            self.connection.commit()
             print("Query executed successfully")
-        except Error as e:
-            print(f"The error '{e}' occurred")
+        except OperationalError as e:
+            print(e)
+
+    def read_execute_query(self, query: str) -> List[tuple]:
+        cursor = self.connection.cursor()
+        result = None
+        try:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            return result
+        except OperationalError as e:
+            print(e)
 
 
 class Query:
 
     @staticmethod
-    def add_user(uid, username, pswd):
+    def add_user(uid: str, username: str, password: str) -> str:
         print("User added successfully")
-        return f'''INSERT INTO users (uid, username, password) VALUES ("{uid}", "{username}", "{pswd}");'''
+        return f'''INSERT INTO users (uid, username, password) VALUES ("{uid}", "{username}", "{password}");'''
 
 
-    create_user_table = '''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        uid TEXT NOT NULL,
-        username TEXT NOT NULL,
-        password TEXT NOT NULL
-    );
-    '''
+    @staticmethod
+    def create_table(table_name: str, **columns: Dict[str, str]) -> str:
+        query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id SERIAL, "
 
-    create_message_table = '''
-    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        date_time TEXT NOT NULL,
-        message TEXT NOT NULL
-    )
-    '''
+        for column_name, dtype in columns.items():
+            query += (column_name + " " + dtype + ", ")
+
+        query = query[:-2] + " );"
+        return query
