@@ -1,5 +1,5 @@
+import os
 import hashlib
-import pandas as pd
 from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
 from db_utils import DataBase, Query
@@ -10,46 +10,57 @@ from connection_manager import ConnectionManager
 app = FastAPI()
 manager = ConnectionManager()
 
-user_db = DataBase("user_db.sqlite")
-user_db.execute_query(Query.create_user_table)
+DATABASE_URL = os.environ['DATABASE_URL']
+db = DataBase(DATABASE_URL)
 
-message_db = DataBase("messages_db.sqlite")
-message_db.execute_query(Query.create_message_table)
+create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
+    "password": "TEXT NOT NULL"})
 
-def is_valid_uid(uid: str):
+create_message_table_query = Query.create_table("messages", **{"username": "TEXT NOT NULL", \
+    "date_time": "TEXT NOT NULL", "message": "TEXT NOT NULL"})
+
+db.execute_query(create_user_table_query)
+db.execute_query(create_message_table_query)
+
+def is_valid_uid(uid: str) -> bool:
     query = f"SELECT username, password FROM users WHERE uid='{uid}';"
-    query_response = pd.read_sql_query(query, user_db.connection)
-    if query_response.empty: 
-        return False
-    else: 
+    query_response = db.read_execute_query(query)
+    if not query_response:
         return True
+    return False
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials):
-    uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
-    uid_pswd = credentials.password.upper()
-    uid = uid_uname + uid_pswd
+    try:
+        uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
+        uid_pswd = credentials.password.upper()
+        uid = uid_uname + uid_pswd
 
-    query = Query.add_user(uid, credentials.username, credentials.password)
-    user_db.execute_query(query)
-    return True
+        query = Query.add_user(uid, credentials.username, credentials.password)
+        db.execute_query(query)
+        return True
+    except:
+        return False
 
 
 @app.post("/verify", status_code=status.HTTP_200_OK)
 async def verify_user(credentials: UserCredentials):
-    query = f"SELECT username, password FROM users WHERE username='{credentials.username}' AND password='{credentials.password}';"
-    query_response = pd.read_sql_query(query, user_db.connection)
-    user_exists: bool = not query_response.empty
-    return user_exists
+    try:
+        query = f"SELECT uid FROM users WHERE username='{credentials.username}' AND password='{credentials.password}';"
+        query_response = db.read_execute_query(query)
+        user_exists = bool(query_response)
+        return user_exists
+    except:
+        return False
 
 
 @app.post("/login", status_code=status.HTTP_200_OK)
 async def login(credentials: UserCredentials):
     try:
-        query = f"SELECT username, password FROM users WHERE username='{credentials.username}';"
-        query_response = pd.read_sql_query(query, user_db.connection)
-        user_password = query_response.get("password")[0]
-
+        query = f"SELECT password FROM users WHERE username='{credentials.username}';"
+        query_response = db.read_execute_query(query)
+        user_password = query_response[0]
+        print(user_password)
         if user_password == credentials.password:
             return True
         return False
