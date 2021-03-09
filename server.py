@@ -24,11 +24,11 @@ db.execute_query(create_message_table_query)
 
 
 def is_valid_uid(uid: str) -> bool:
-    query = f"SELECT username, password FROM users WHERE uid='{uid}';"
+    query = f"SELECT uid FROM users WHERE uid='{uid}';"
     query_response = db.read_execute_query(query)
     if not query_response:
-        return True
-    return False
+        return False
+    return True
 
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
