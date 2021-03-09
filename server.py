@@ -22,6 +22,7 @@ create_message_table_query = Query.create_table("messages", **{"username": "TEXT
 db.execute_query(create_user_table_query)
 db.execute_query(create_message_table_query)
 
+
 def is_valid_uid(uid: str) -> bool:
     query = f"SELECT username, password FROM users WHERE uid='{uid}';"
     query_response = db.read_execute_query(query)
@@ -29,8 +30,9 @@ def is_valid_uid(uid: str) -> bool:
         return True
     return False
 
+
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
-async def add_user(credentials: UserCredentials):
+async def add_user(credentials: UserCredentials) -> bool:
     try:
         uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
         uid_pswd = credentials.password.upper()
@@ -44,7 +46,7 @@ async def add_user(credentials: UserCredentials):
 
 
 @app.post("/verify", status_code=status.HTTP_200_OK)
-async def verify_user(credentials: UserCredentials):
+async def verify_user(credentials: UserCredentials) -> bool:
     try:
         query = f"SELECT uid FROM users WHERE username='{credentials.username}' AND password='{credentials.password}';"
         query_response = db.read_execute_query(query)
@@ -55,7 +57,7 @@ async def verify_user(credentials: UserCredentials):
 
 
 @app.post("/login", status_code=status.HTTP_200_OK)
-async def login(credentials: UserCredentials):
+async def login(credentials: UserCredentials) -> bool:
     try:
         query = f"SELECT password FROM users WHERE username='{credentials.username}';"
         query_response = db.read_execute_query(query)
@@ -70,7 +72,7 @@ async def login(credentials: UserCredentials):
 
 
 @app.websocket("/chat/{uid}")
-async def chat_websocket(websocket: WebSocket, uid: str):   
+async def chat_websocket(websocket: WebSocket, uid: str) -> None:   
     
     await manager.connect(uid, websocket)
     user_access = is_valid_uid(uid)
@@ -85,3 +87,9 @@ async def chat_websocket(websocket: WebSocket, uid: str):
 
         except WebSocketDisconnect:
             manager.disconnect(websocket)
+
+
+@app.post("/active", status_code=status.HTTP_200_OK)
+async def active_users() -> str:
+    users_active =  list(manager.active_connections.keys())
+    return {"active_users": users_active}
