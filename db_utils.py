@@ -1,5 +1,5 @@
 from typing import List, Dict
-import psycopg2 as pg
+import psycopg2
 from psycopg2 import OperationalError
 
 
@@ -8,7 +8,7 @@ class DataBase:
     def __init__(self, db_url: str) -> None:
         connection = None
         try:
-            connection = pg.connect(db_url)
+            connection = psycopg2.connect(db_url, sslmode='require')
             print("Connection to Database successful")
         except OperationalError as e:
             print(e)
@@ -40,7 +40,7 @@ class Query:
     @staticmethod
     def add_user(uid: str, username: str, password: str) -> str:
         print("User added successfully")
-        return f'''INSERT INTO users (uid, username, password) VALUES ("{uid}", "{username}", "{password}");'''
+        return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
 
 
     @staticmethod
