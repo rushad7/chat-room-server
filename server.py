@@ -45,6 +45,7 @@ async def add_user(credentials: UserCredentials) -> bool:
             query = Query.add_user(uid, credentials.username, credentials.password)
             db.execute_query(query)
             return True
+        return False
     except:
         return False
 
