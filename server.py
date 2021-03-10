@@ -51,8 +51,8 @@ async def verify_user(credentials: UserCredentials) -> bool:
         query = f"SELECT uid FROM users WHERE username='{credentials.username}' AND password='{credentials.password}';"
         query_response = db.read_execute_query(query)
         if len(query_response) == 1:
-            return False
-        return True
+            return True
+        return False
     except:
         return False
 
