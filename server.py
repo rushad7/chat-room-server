@@ -36,7 +36,7 @@ async def add_user(credentials: UserCredentials) -> bool:
     try:
         query = f"SELECT uid FROM users WHERE username='{credentials.username}'";
         query_response = db.read_execute_query(query)
-        
+        print(query_response)
         if len(query_response) == 1 and len(query_response[0]) == 1:
             uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
             uid_pswd = credentials.password.upper()
