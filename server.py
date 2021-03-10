@@ -34,7 +34,7 @@ def is_valid_uid(uid: str) -> bool:
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials) -> bool:
     try:
-        query = f"SELECT uid FROM users WHERE username='{credentials.username}';
+        query = f"SELECT uid FROM users WHERE username='{credentials.username}'";
         query_response = db.read_execute_query(query)
         
         if len(query_response) == 1 and len(query_response[0]) == 1:
