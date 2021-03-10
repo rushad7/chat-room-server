@@ -34,13 +34,17 @@ def is_valid_uid(uid: str) -> bool:
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials) -> bool:
     try:
-        uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
-        uid_pswd = credentials.password.upper()
-        uid = uid_uname + uid_pswd
+        query = f"SELECT uid FROM users WHERE username='{credentials.username}';
+        query_response = db.read_execute_query(query)
+        
+        if len(query_response) == 1 and len(query_response[0]) == 1:
+            uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
+            uid_pswd = credentials.password.upper()
+            uid = uid_uname + uid_pswd
 
-        query = Query.add_user(uid, credentials.username, credentials.password)
-        db.execute_query(query)
-        return True
+            query = Query.add_user(uid, credentials.username, credentials.password)
+            db.execute_query(query)
+            return True
     except:
         return False
 
@@ -48,7 +52,7 @@ async def add_user(credentials: UserCredentials) -> bool:
 @app.post("/verify", status_code=status.HTTP_200_OK)
 async def verify_user(credentials: UserCredentials) -> bool:
     try:
-        query = f"SELECT uid FROM users WHERE username='{credentials.username}' AND password='{credentials.password}';"
+        query = f"SELECT uid FROM users WHERE username='{credentials.username}';"
         query_response = db.read_execute_query(query)
         print(query_response)
         if len(query_response) == 1:
