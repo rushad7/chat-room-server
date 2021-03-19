@@ -17,6 +17,9 @@ class ConnectionManager:
     async def send_message(self, message: str, websocket: WebSocket) -> None:
         await websocket.send_text(message)
 
-    async def broadcast_message(self, message: str) -> None:
+    async def broadcast_message(self, websocket: WebSocket, message: str) -> None:
         for connection in list(self.active_connections.values()):
-            await connection.send_text(message)
+            if websocket == connection:
+                continue
+            else:
+                await connection.send_text(message)

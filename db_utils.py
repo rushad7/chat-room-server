@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from typing import List, Dict
 import psycopg2
 from psycopg2 import OperationalError
@@ -42,6 +43,11 @@ class Query:
         print("User added successfully")
         return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
 
+
+    @staticmethod
+    def save_message(uid: str, message: str) -> str:
+        date_time = str(datetime.now())
+        return f"INSERT INTO messages (uid, date_time, message) VALUES ('{uid}', '{date_time}', '{message}');"
 
     @staticmethod
     def create_table(table_name: str, **columns: Dict[str, str]) -> str:

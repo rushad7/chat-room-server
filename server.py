@@ -16,7 +16,7 @@ db = DataBase(DATABASE_URL)
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
 
-create_message_table_query = Query.create_table("messages", **{"username": "TEXT NOT NULL", \
+create_message_table_query = Query.create_table("messages", **{"uid": "TEXT NOT NULL", \
     "date_time": "TEXT NOT NULL", "message": "TEXT NOT NULL"})
 
 db.execute_query(create_user_table_query)
@@ -83,7 +83,9 @@ async def chat_websocket(websocket: WebSocket, uid: str) -> None:
                 message = await websocket.receive_text()
                 print(message)
                 
-                await manager.broadcast_message(message)
+                save_message_query = Query.save_message(uid, message)
+                db.execute_query(save_message_query)
+                await manager.broadcast_message(websocket, message)
 
         except WebSocketDisconnect:
             manager.disconnect(websocket)
