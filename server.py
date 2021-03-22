@@ -5,13 +5,15 @@ from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 from db_utils import DataBase, Query
 from data_models import UserCredentials
 from connection_manager import ConnectionManager
-
+from drive import ChatDrive
 
 app = FastAPI()
 manager = ConnectionManager()
+chatdrive = ChatDrive()
 
 DATABASE_URL = os.environ['DATABASE_URL']
 db = DataBase(DATABASE_URL)
+chatdrive.create_room("global.txt")
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
@@ -65,11 +67,15 @@ async def login(credentials: UserCredentials) -> bool:
         return False
 
 
-@app.websocket("/chat/{uid}")
-async def chat_websocket(websocket: WebSocket, uid: str) -> None:   
+@app.websocket("/chat/{room_name}/{uid}")
+async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None:   
     
+    #TODO : CHECK IF ROOM EXISTS
     await manager.connect(uid, websocket)
     user_access = is_valid_uid(uid)
+
+    if chatdrive.is_expired:
+        chatdrive = ChatDrive()
 
     if user_access:
         try:
@@ -77,8 +83,7 @@ async def chat_websocket(websocket: WebSocket, uid: str) -> None:
                 message = await websocket.receive_text()
                 print(message)
                 
-                save_message_query = Query.save_message(uid, message)
-                db.execute_query(save_message_query)
+                chatdrive.add_chat(room_name, uid, message)
                 await manager.broadcast_message(websocket, message)
 
         except WebSocketDisconnect:
