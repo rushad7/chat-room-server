@@ -12,10 +12,11 @@ class ChatDrive:
         CREDS1 = os.environ.get('creds1')
         CREDS2 = os.environ.get('creds2')
         CREDS = CREDS1 + CREDS2
+        creds_json = json.loads(CREDS)
         scope = ['https://www.googleapis.com/auth/drive']
         
         with open("creds.json", "w") as creds_file:
-            json.dump(SECRETS, creds_file)
+            json.dump(creds_json, creds_file)
 
         gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
         self.drive = GoogleDrive(gauth)
