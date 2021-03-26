@@ -11,9 +11,10 @@ app = FastAPI()
 manager = ConnectionManager()
 chatdrive = ChatDrive()
 
-DATABASE_URL = os.environ['DATABASE_URL']
+DATABASE_URL = os.environ.get('DATABASE_URL')
 db = DataBase(DATABASE_URL)
-chatdrive.create_room("global.txt")
+chatdrive.create_room("global")
+chatdrive.add_chat("global", "testuid", "IT WORKS!")
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
