@@ -8,6 +8,16 @@ class ChatDrive:
     
     def __init__(self):
         gauth = GoogleAuth()
+<<<<<<< HEAD
+=======
+        creds = json.loads(os.environ.get('CREDS'))
+        scope = ['https://www.googleapis.com/auth/drive']
+        
+        with open("creds.json", "w") as creds_file:
+            json.dump(creds, creds_file)
+
+        gauth.credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
+>>>>>>> dec9de14de92bdaced020d63bed167f9a72ad94e
         self.drive = GoogleDrive(gauth)
         self.is_expired = gauth.access_token_expired
 
