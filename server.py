@@ -75,7 +75,6 @@ async def login(credentials: UserCredentials) -> bool:
 @app.websocket("/chat/{room_name}/{uid}")
 async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None:   
     
-    #TODO : CHECK IF ROOM EXISTS
     await manager.connect(uid, websocket)
     user_access = is_valid_uid(uid)
 
@@ -85,7 +84,7 @@ async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None
                 message = await websocket.receive_text()
                 print(message)
                 
-                chatdrive.add_chat(room_name, uid, message)
+                #chatdrive.add_chat(room_name, uid, message)
                 await manager.broadcast_message(websocket, message)
 
         except WebSocketDisconnect:
