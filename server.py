@@ -79,9 +79,6 @@ async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None
     await manager.connect(uid, websocket)
     user_access = is_valid_uid(uid)
 
-    if chatdrive.is_expired:
-        chatdrive = ChatDrive()
-
     if user_access:
         try:
             while True:
