@@ -1,15 +1,13 @@
-import os
-import json
 from pydrive.drive import GoogleDrive
 from pydrive.auth import GoogleAuth
 
 
 class ChatDrive:
     
-    def __init__(self):
+    def __init__(self) -> None:
         gauth = GoogleAuth()
         self.drive = GoogleDrive(gauth)
-        self.is_expired = gauth.access_token_expired
+        self.is_expired: bool = gauth.access_token_expired
 
 
     def create_room(self, name: str) -> None:
@@ -18,8 +16,9 @@ class ChatDrive:
 
         if ~room_exists:
             self.drive.CreateFile({'title': roomname})
-        room = self.drive.CreateFile({'title': roomname})
-        room.Upload()
+        else:
+            room = self.drive.CreateFile({'title': roomname})
+            room.Upload()
 
 
     def add_chat(self, room_name: str, uid: str, message: str) -> None:
@@ -42,7 +41,7 @@ class ChatDrive:
             return file_list[0]
 
     
-    def _room_exists(self, roomname) -> bool:
+    def _room_exists(self, roomname: str) -> bool:
         files = self.drive.ListFile({'q': f"title='{roomname}' and trashed=false"}).GetList()
         file_list = [file['title'] for file in files]
         print(file_list)
