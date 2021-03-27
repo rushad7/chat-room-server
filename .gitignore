@@ -129,6 +129,5 @@ dmypy.json
 .pyre/
 
 # Credentials
-client_secrets.json
 credentials.json
 settings.yaml
