@@ -32,7 +32,7 @@ class ChatDrive:
     def _get_room_id(self, roomname: str) -> str:
         files = self.drive.ListFile({'q': f"title='{roomname}' and trashed=false"}).GetList()
         file_list = [file['id'] for file in files]
-        print(file_list)
+
         if len(file_list) > 1:
             raise FileExistsError
         elif len(file_list) == 0:
@@ -44,7 +44,7 @@ class ChatDrive:
     def _room_exists(self, roomname: str) -> bool:
         files = self.drive.ListFile({'q': f"title='{roomname}' and trashed=false"}).GetList()
         file_list = [file['title'] for file in files]
-        print(file_list)
+        
         if roomname in file_list:
             return True
         return False 
