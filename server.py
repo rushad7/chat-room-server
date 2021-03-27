@@ -2,19 +2,22 @@ import os
 import hashlib
 from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
-from db_utils import DataBase, Query
+import io_utils as io
+from db_utils import DataBase, Query 
 from data_models import UserCredentials
 from connection_manager import ConnectionManager
 from drive import ChatDrive
 
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+io.jsonify_env_var('CREDENTIALS')
+io.yamlify_env_var('SETTINGS')
+
 app = FastAPI()
 manager = ConnectionManager()
 chatdrive = ChatDrive()
-
-DATABASE_URL = os.environ.get('DATABASE_URL')
 db = DataBase(DATABASE_URL)
 chatdrive.create_room("global")
-chatdrive.add_chat("global", "testuid", "IT WORKS!")
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
