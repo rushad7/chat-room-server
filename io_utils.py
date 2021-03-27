@@ -10,9 +10,8 @@ def jsonify_env_var(env_var: str, filename: str) -> None:
 
     env_var_content = os.environ.get(env_var)
     file_data = json.loads(env_var_content)
-    file_path = f"~/{filename}"
-
-    with open(file_path, 'w') as file:
+    
+    with open(filename, 'w') as file:
             json.dump(file_data, file)
 
 
@@ -29,6 +28,5 @@ def yamlify_env_var(env_var: str, filename: str) -> None:
     finally:
         loader.dispose()
         
-    file_path = f"~/{filename}"
-    with open(file_path, 'w') as file:
+    with open(filename, 'w') as file:
         yaml.dump(file_data, file, default_flow_style=False)
