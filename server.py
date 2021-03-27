@@ -15,9 +15,9 @@ manager = ConnectionManager()
 DATABASE_URL = os.environ.get('DATABASE_URL')
 db = DataBase(DATABASE_URL)
 
-chatdrive = ChatDrive()
 io.jsonify_env_var('CREDENTIALS', 'credentials.json')
 io.yamlify_env_var('SETTINGS', 'settings.yaml')
+chatdrive = ChatDrive()
 chatdrive.create_room("global")
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
