@@ -5,7 +5,7 @@ from pydrive.auth import GoogleAuth
 class ChatDrive:
     
     def __init__(self) -> None:
-        gauth = GoogleAuth()
+        gauth = GoogleAuth(settings_file="../tmp/settings.yaml")
         self.drive = GoogleDrive(gauth)
         self.is_expired: bool = gauth.access_token_expired
 
