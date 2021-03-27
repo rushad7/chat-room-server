@@ -10,8 +10,8 @@ from drive import ChatDrive
 
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-io.jsonify_env_var('CREDENTIALS')
-io.yamlify_env_var('SETTINGS')
+io.jsonify_env_var('CREDENTIALS', 'credentials.json')
+io.yamlify_env_var('SETTINGS', 'settings.json')
 
 app = FastAPI()
 manager = ConnectionManager()
