@@ -1,2 +1,2 @@
-echo ${CREDENTIALS} > /app/credentials.json
-echo ${SETTINGS} > /app/settings.yaml
+echo ${CREDENTIALS} > ~/credentials.json
+echo ${SETTINGS} > ~/settings.yaml
