@@ -24,13 +24,12 @@ create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL",
 create_rooms_table_query = Query.create_table("rooms", **{"roomname": "TEXT NOT NULL", \
     "roomkey": "TEXT NOT NULL"})
 
-db.execute_query(create_user_table_query)
-db.execute_query(create_rooms_table_query)
-
+db.execute_query(create_user_table_query, logging_message="Created users table")
+db.execute_query(create_rooms_table_query, logging_message="Created rooms table")
 
 def is_valid_uid(uid: str) -> bool:
     query = f"SELECT uid FROM users WHERE uid='{uid}';"
-    query_response = db.read_execute_query(query)
+    query_response = db.read_execute_query(query, logging_message="User Verfication")
     if not query_response:
         return False
     return True
@@ -38,7 +37,7 @@ def is_valid_uid(uid: str) -> bool:
 
 def room_exists(roomname: str) -> bool:
     query = f"SELECT roomname FROM rooms WHERE roomname='{roomname}';"
-    query_response = db.read_execute_query(query)
+    query_response = db.read_execute_query(query, logging_message="Room Verification")
     if query_response == []:
         return False
     return True
@@ -48,14 +47,14 @@ chatdrive = ChatDrive()
 chatdrive.create_room("global")
 query = Query.create_room("global", " ")
 if ~room_exists("global"):
-    db.execute_query(query)
+    db.execute_query(query, logging_message="Register Global room")
 
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials) -> bool:
     try:
-        query = f"SELECT uid FROM users WHERE username='{credentials.username}'";
-        query_response = db.read_execute_query(query)
+        query = f"SELECT uid FROM users WHERE username='{credentials.username}';"
+        query_response = db.read_execute_query(query, logging_message="User lookup")
         
         if query_response == []:
             uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
@@ -63,7 +62,7 @@ async def add_user(credentials: UserCredentials) -> bool:
             uid = uid_uname + uid_pswd
 
             query = Query.add_user(uid, credentials.username, credentials.password)
-            db.execute_query(query)
+            db.execute_query(query,logging_message="User registered")
             return True
         return False
     except:
@@ -74,7 +73,7 @@ async def add_user(credentials: UserCredentials) -> bool:
 async def login(credentials: UserCredentials) -> bool:
     try:
         query = f"SELECT password FROM users WHERE username='{credentials.username}';"
-        query_response = db.read_execute_query(query)
+        query_response = db.read_execute_query(query, logging_message="User lookup")
         user_password = query_response[0][0]
         
         if user_password == credentials.password:
@@ -117,7 +116,7 @@ async def create_room(room: Room) -> bool:
         if ~room_exists(room.name):
             chatdrive.create_room(room.name)
             query = Query.create_room(room.name, room.key)
-            db.execute_query(query)
+            db.execute_query(query,logging_message="Room lookup")
             return True
         else:
             return False
