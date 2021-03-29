@@ -4,7 +4,7 @@ from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
 import io_utils as io
 from db_utils import DataBase, Query 
-from data_models import UserCredentials
+from data_models import UserCredentials, Room
 from connection_manager import ConnectionManager
 from drive import ChatDrive
 
@@ -17,23 +17,32 @@ db = DataBase(DATABASE_URL)
 
 io.jsonify_env_var('CREDENTIALS', 'credentials.json')
 io.yamlify_env_var('SETTINGS', 'settings.yaml')
+
 chatdrive = ChatDrive()
 chatdrive.create_room("global")
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
 
-create_message_table_query = Query.create_table("messages", **{"uid": "TEXT NOT NULL", \
-    "date_time": "TEXT NOT NULL", "message": "TEXT NOT NULL"})
+create_rooms_table_query = Query.create_table("rooms", **{"roomname": "TEXT NOT NULL", \
+    "roomkey": "TEXT NOT NULL"})
 
 db.execute_query(create_user_table_query)
-db.execute_query(create_message_table_query)
+db.execute_query(create_rooms_table_query)
 
 
 def is_valid_uid(uid: str) -> bool:
     query = f"SELECT uid FROM users WHERE uid='{uid}';"
     query_response = db.read_execute_query(query)
     if not query_response:
+        return False
+    return True
+
+
+def room_exists(roomname: str) -> bool:
+    query = f"SELECT roomname FROM rooms WHERE roomname='{roomname}';"
+    query_response = db.read_execute_query(query)
+    if query_response == []:
         return False
     return True
 
@@ -82,10 +91,11 @@ async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None
         try:
             while True:
                 message = await websocket.receive_text()
+                username = message.split(":")[0]
                 print(message)
                 
                 await manager.broadcast_message(websocket, message)
-                chatdrive.add_chat(room_name, uid, message)
+                chatdrive.add_chat(room_name, username, message)
 
         except WebSocketDisconnect:
             manager.disconnect(websocket)
@@ -95,3 +105,17 @@ async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None
 async def active_users() -> str:
     users_active =  list(manager.active_connections.keys())
     return {"active_users": users_active}
+
+
+@app.post("/create-room", status_code=status.HTTP_200_OK)
+async def create_room(room: Room) -> bool:
+    try:
+        if ~room_exists:
+            chatdrive.create_room(room.name)
+            query = Query.create_room(room.name, room.key)
+            db.execute_query(query)
+            return True
+        else:
+            return False
+    except:
+        return False
