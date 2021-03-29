@@ -43,9 +43,13 @@ def room_exists(roomname: str) -> bool:
         return False
     return True
 
+
 chatdrive = ChatDrive()
 chatdrive.create_room("global")
-Query.create_room("global", " ")
+query = Query.create_room("global", " ")
+if ~room_exists("global"):
+    db.execute_query(query)
+
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials) -> bool:
