@@ -16,21 +16,32 @@ class DataBase:
 
         self.connection = connection
 
-    def execute_query(self, query: str) -> None:
+
+    def execute_query(self, query: str, logging_message=None) -> None:
         self.connection.autocommit = True
         cursor = self.connection.cursor()
         try:
             cursor.execute(query)
-            print("Query executed successfully")
+            if logging_message == None:
+                print("Query executed successfully")
+            else:
+                print(f"DATABASE LOG: {logging_message}")
         except OperationalError as e:
             print(e)
 
-    def read_execute_query(self, query: str) -> List[tuple]:
+
+    def read_execute_query(self, query: str, logging_message=None) -> List[tuple]:
         cursor = self.connection.cursor()
         result = None
         try:
             cursor.execute(query)
             result = cursor.fetchall()
+
+            if logging_message == None:
+                print("Query executed successfully")
+            else:
+                print(f"DATABASE LOG: {logging_message}")
+
             return result
         except OperationalError as e:
             print(e)
