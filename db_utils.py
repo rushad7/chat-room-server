@@ -45,11 +45,6 @@ class Query:
 
 
     @staticmethod
-    def save_message(uid: str, message: str) -> str:
-        date_time = str(datetime.now())
-        return f"INSERT INTO messages (uid, date_time, message) VALUES ('{uid}', '{date_time}', '{message}');"
-
-    @staticmethod
     def create_table(table_name: str, **columns: Dict[str, str]) -> str:
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id SERIAL, "
 
@@ -57,4 +52,10 @@ class Query:
             query += (column_name + " " + dtype + ", ")
 
         query = query[:-2] + " );"
+        return query
+
+
+    @staticmethod
+    def create_room(roomname: str, roomkey: str) -> str:
+        query = f"INSERT INTO rooms (roomname, roomkey) VALUES ('{roomname}', '{roomkey}');"
         return query
