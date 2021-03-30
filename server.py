@@ -38,15 +38,19 @@ def is_valid_uid(uid: str) -> bool:
 def room_exists(roomname: str) -> bool:
     query = f"SELECT roomname FROM rooms WHERE roomname='{roomname}';"
     query_response = db.read_execute_query(query, logging_message="Room Verification")
-    if query_response == []:
+    query_response = [element for response_list in query_response for element in response_list]
+    if len(query_response) == 1:
+        return True
+    else:
         return False
-    return True
 
 
 chatdrive = ChatDrive()
 chatdrive.create_room("global")
 query = Query.create_room("global", " ")
 if ~room_exists("global"):
+    pass
+else:
     db.execute_query(query, logging_message="Register Global room")
 
 
@@ -114,11 +118,11 @@ async def active_users() -> str:
 async def create_room(room: Room) -> bool:
     try:
         if ~room_exists(room.name):
+            pass
+        else:
             chatdrive.create_room(room.name)
             query = Query.create_room(room.name, room.key)
             db.execute_query(query,logging_message="Room lookup")
             return True
-        else:
-            return False
     except:
         return False
