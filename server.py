@@ -49,8 +49,6 @@ chatdrive = ChatDrive()
 chatdrive.create_room("global")
 query = Query.create_room("global", " ")
 if ~room_exists("global"):
-    pass
-else:
     db.execute_query(query, logging_message="Register Global room")
 
 
