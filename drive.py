@@ -1,4 +1,3 @@
-import os
 from pydrive.drive import GoogleDrive
 from pydrive.auth import GoogleAuth
 
@@ -7,11 +6,6 @@ class ChatDrive:
     
     def __init__(self) -> None:
         gauth = GoogleAuth(settings_file="settings.yaml")
-
-        if gauth.access_token_expired:
-            print("Google Drive Token Expired, Refreshing")
-            gauth.Refresh()
-
         self.drive = GoogleDrive(gauth)
         self.create_room("global")
 
@@ -26,10 +20,10 @@ class ChatDrive:
             self.drive.CreateFile({'title' : f"{roomname}.room"})
 
 
-    def add_chat(self, roomname: str, uid: str, message: str) -> None:
+    def add_chat(self, roomname: str, username: str, message: str) -> None:
         room_id = self._get_room_id(roomname)
         room = self.drive.CreateFile({'id': room_id})
-        updated_content = f"{room.GetContentString()}{uid}:{message}\n"
+        updated_content = f"{room.GetContentString()}{username}:{message}\n"
         room.SetContentString(updated_content)
         room.Upload()
 
