@@ -18,8 +18,6 @@ db = DataBase(DATABASE_URL)
 io.jsonify_env_var('CREDENTIALS', 'credentials.json')
 io.yamlify_env_var('SETTINGS', 'settings.yaml')
 
-chatdrive = ChatDrive()
-
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
 
@@ -28,6 +26,8 @@ create_rooms_table_query = Query.create_table("rooms", **{"roomname": "TEXT NOT 
 
 db.execute_query(create_user_table_query, logging_message="Created users table")
 db.execute_query(create_rooms_table_query, logging_message="Created rooms table")
+
+chatdrive = ChatDrive()
 
 def is_valid_uid(uid: str) -> bool:
     query = f"SELECT uid FROM users WHERE uid='{uid}';"
