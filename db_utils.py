@@ -1,4 +1,3 @@
-from datetime import date, datetime
 from typing import List, Dict
 import psycopg2
 from psycopg2 import OperationalError
@@ -67,6 +66,6 @@ class Query:
 
 
     @staticmethod
-    def create_room(roomname: str, roomkey: str) -> str:
+    def create_room(roomname: str, roomkey=None) -> str:
         query = f"INSERT INTO rooms (roomname, roomkey) VALUES ('{roomname}', '{roomkey}');"
         return query
