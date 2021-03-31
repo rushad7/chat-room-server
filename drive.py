@@ -52,9 +52,6 @@ class ChatDrive:
         files = self.drive.ListFile({'q': f"title='{roomname}.room' and trashed=false"}).GetList()
         file_list = [file['id'] for file in files]
  
-        if len(file_list) > 1:
-            raise FileExistsError
-        elif len(file_list) == 0:
-            raise FileNotFoundError
-        else:
+        if len(file_list) == 1:
             return True
+        return False
