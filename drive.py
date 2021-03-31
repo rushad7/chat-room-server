@@ -1,5 +1,8 @@
+import os
 from pydrive.drive import GoogleDrive
 from pydrive.auth import GoogleAuth
+
+from db_utils import DataBase, Query
 
 
 class ChatDrive:
@@ -7,12 +10,17 @@ class ChatDrive:
     def __init__(self) -> None:
         gauth = GoogleAuth(settings_file="settings.yaml")
         self.drive = GoogleDrive(gauth)
-        self.is_expired: bool = gauth.access_token_expired
+
+        DATABASE_URL = os.environ.get('DATABASE_URL')
+        db = DataBase(DATABASE_URL)
+        if ~self.room_exists("global"):
+            query = Query.create_room("global")
+            db.execute_query(query, logging_message="Create Global Room")
 
 
     def create_room(self, name: str) -> None:
         roomname  = f"{name}.room"
-        room_exists = self._room_exists(roomname)
+        room_exists = self.room_exists(roomname)
 
         if ~room_exists:
             self.drive.CreateFile({'title': roomname})
@@ -41,7 +49,7 @@ class ChatDrive:
             return file_list[0]
 
     
-    def _room_exists(self, roomname: str) -> bool:
+    def room_exists(self, roomname: str) -> bool:
         files = self.drive.ListFile({'q': f"title='{roomname}' and trashed=false"}).GetList()
         file_list = [file['title'] for file in files]
         
