@@ -14,8 +14,7 @@ class ChatDrive:
         room_exists = self.room_exists(roomname)
 
         if not room_exists:
-            room = self.drive.CreateFile({'title': f"{roomname}.room"})
-            room.Upload()
+            self.drive.CreateFile({'title': f"{roomname}.room"})
         else:
             roomname = f"{roomname}.room"
             self.drive.CreateFile({'id' : f"{self._get_room_id(roomname)}"})
