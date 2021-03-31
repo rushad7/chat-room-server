@@ -18,27 +18,26 @@ class ChatDrive:
             db.execute_query(query, logging_message="Create Global Room")
 
 
-    def create_room(self, name: str) -> None:
-        roomname  = f"{name}.room"
+    def create_room(self, roomname: str) -> None:
         room_exists = self.room_exists(roomname)
 
         if not room_exists:
-            self.drive.CreateFile({'title': roomname})
+            self.drive.CreateFile({'title': f"{roomname}.room"})
         else:
-            room = self.drive.CreateFile({'title': roomname})
+            room = self.drive.CreateFile({'title' : f"{roomname}.room"})
             room.Upload()
 
 
-    def add_chat(self, room_name: str, uid: str, message: str) -> None:
-        room_id = self._get_room_id(f"{room_name}.room")
+    def add_chat(self, roomname: str, uid: str, message: str) -> None:
+        room_id = self._get_room_id(roomname)
         room = self.drive.CreateFile({'id': room_id})
-        updated_content = f"{room.GetContentString()}\n{uid}:{message}"
+        updated_content = f"{room.GetContentString()}{uid}:{message}\n"
         room.SetContentString(updated_content)
         room.Upload()
 
 
     def _get_room_id(self, roomname: str) -> str:
-        files = self.drive.ListFile({'q': f"title='{roomname}' and trashed=false"}).GetList()
+        files = self.drive.ListFile({'q': f"title='{roomname}.room' and trashed=false"}).GetList()
         file_list = [file['id'] for file in files]
 
         if len(file_list) > 1:
@@ -49,7 +48,7 @@ class ChatDrive:
             return file_list[0]
 
     
-    def room_exists(self, roomname: str) -> bool or FileExistsError or FileNotFoundError:
+    def room_exists(self, roomname: str) -> bool:
         files = self.drive.ListFile({'q': f"title='{roomname}.room' and trashed=false"}).GetList()
         file_list = [file['id'] for file in files]
  
