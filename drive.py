@@ -7,11 +7,6 @@ class ChatDrive:
     
     def __init__(self) -> None:
         gauth = GoogleAuth(settings_file="settings.yaml")
-
-        if gauth.access_token_expired:
-            print("Google Drive Token Expired, Refreshing")
-            gauth.Refresh()
-
         self.drive = GoogleDrive(gauth)
         self.create_room("global")
 
