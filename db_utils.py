@@ -63,9 +63,3 @@ class Query:
 
         query = query[:-2] + " );"
         return query
-
-
-    @staticmethod
-    def create_room(roomname: str, roomkey=None) -> str:
-        query = f"INSERT INTO rooms (roomname, roomkey) VALUES ('{roomname}', '{roomkey}');"
-        return query
