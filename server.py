@@ -18,6 +18,8 @@ db = DataBase(DATABASE_URL)
 io.jsonify_env_var('CREDENTIALS', 'credentials.json')
 io.yamlify_env_var('SETTINGS', 'settings.yaml')
 
+chatdrive = ChatDrive()
+
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
 
@@ -33,23 +35,6 @@ def is_valid_uid(uid: str) -> bool:
     if not query_response:
         return False
     return True
-
-
-def room_exists(roomname: str) -> bool:
-    query = f"SELECT roomname FROM rooms WHERE roomname='{roomname}';"
-    query_response = db.read_execute_query(query, logging_message="Room Verification")
-    query_response = [element for response_list in query_response for element in response_list]
-    if len(query_response) == 1:
-        return True
-    else:
-        return False
-
-
-chatdrive = ChatDrive()
-chatdrive.create_room("global")
-query = Query.create_room("global", " ")
-if ~room_exists("global"):
-    db.execute_query(query, logging_message="Register Global room")
 
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
@@ -115,9 +100,7 @@ async def active_users() -> str:
 @app.post("/create-room", status_code=status.HTTP_200_OK)
 async def create_room(room: Room) -> bool:
     try:
-        if ~room_exists(room.name):
-            pass
-        else:
+        if ~chatdrive.room_exists(room.name):
             chatdrive.create_room(room.name)
             query = Query.create_room(room.name, room.key)
             db.execute_query(query,logging_message="Room lookup")
