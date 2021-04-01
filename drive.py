@@ -12,9 +12,6 @@ class ChatDrive:
         if gauth.access_token_expired:
             gauth.Refresh()
 
-        else:
-            gauth.Auth()
-
         self.drive = GoogleDrive(gauth)
         self.create_room("global")
 
