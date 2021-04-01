@@ -98,8 +98,6 @@ async def create_room(room: Room) -> bool:
     try:
         if not chatdrive.room_exists(room.name):
             chatdrive.create_room(room.name)
-            query = Query.create_room(room.name, room.key)
-            db.execute_query(query,logging_message="Room lookup")
             return True
     except:
         return False
