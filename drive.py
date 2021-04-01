@@ -8,6 +8,18 @@ class ChatDrive:
     def __init__(self) -> None:
         gauth = GoogleAuth(settings_file="settings.yaml")
         self.drive = GoogleDrive(gauth)
+
+        if gauth.credentials is None:
+            gauth.GetFlow()
+            gauth.flow.params.update({'access_type': 'offline'})
+            gauth.flow.params.update({'approval_prompt': 'force'})
+
+        elif gauth.access_token_expired:
+            gauth.Refresh()
+
+        else:
+            gauth.Auth()
+
         self.create_room("global")
 
 
