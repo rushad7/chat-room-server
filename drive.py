@@ -7,8 +7,7 @@ class ChatDrive:
     
     def __init__(self) -> None:
         gauth = GoogleAuth(settings_file="settings.yaml")
-        gauth.CommandLineAuth()
-
+        
         if gauth.access_token_expired:
             gauth.Refresh()
 
