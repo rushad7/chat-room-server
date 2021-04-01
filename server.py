@@ -2,7 +2,6 @@ import os
 import hashlib
 from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
-import io_utils as io
 from db_utils import DataBase, Query 
 from data_models import UserCredentials, Room
 from connection_manager import ConnectionManager
@@ -14,9 +13,6 @@ manager = ConnectionManager()
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 db = DataBase(DATABASE_URL)
-
-io.jsonify_env_var('CREDENTIALS', 'credentials.json')
-io.yamlify_env_var('SETTINGS', 'settings.yaml')
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
@@ -98,6 +94,7 @@ async def create_room(room: Room) -> bool:
     try:
         if not chatdrive.room_exists(room.name):
             chatdrive.create_room(room.name, room.key)
+            print(f"Roomname: {room.name}")
             return True
     except:
         return False
