@@ -7,7 +7,6 @@ class ChatDrive:
     
     def __init__(self) -> None:
         gauth = GoogleAuth(settings_file="settings.yaml")
-        self.drive = GoogleDrive(gauth)
 
         if gauth.credentials is None:
             gauth.GetFlow()
@@ -20,6 +19,7 @@ class ChatDrive:
         else:
             gauth.Auth()
 
+        self.drive = GoogleDrive(gauth)
         self.create_room("global")
 
 
