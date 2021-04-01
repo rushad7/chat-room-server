@@ -81,7 +81,7 @@ async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None
                 print(message)
                 
                 await manager.broadcast_message(websocket, message)
-                chatdrive.add_chat(room_name, username, chat)
+                await chatdrive.add_chat(room_name, username, chat)
 
         except WebSocketDisconnect:
             manager.disconnect(websocket)
