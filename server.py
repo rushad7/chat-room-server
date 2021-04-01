@@ -97,7 +97,7 @@ async def active_users() -> str:
 async def create_room(room: Room) -> bool:
     try:
         if not chatdrive.room_exists(room.name):
-            chatdrive.create_room(room.name)
+            chatdrive.create_room(room.name, room.key)
             return True
     except:
         return False

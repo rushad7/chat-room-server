@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydrive.drive import GoogleDrive
 from pydrive.auth import GoogleAuth
 
@@ -10,11 +11,12 @@ class ChatDrive:
         self.create_room("global")
 
 
-    def create_room(self, roomname: str) -> None:
+    def create_room(self, roomname: str, roomkey: str) -> None:
         room_exists = self.room_exists(roomname)
 
         if not room_exists:
             room = self.drive.CreateFile({'title': f"{roomname}.room"})
+            room.SetContentString(f"CREATED: {str(datetime.now())}")
             room.Upload()
 
 
