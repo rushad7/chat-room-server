@@ -18,15 +18,15 @@ class ChatDrive:
             room.Upload()
 
 
-    def add_chat(self, roomname: str, username: str, message: str) -> None:
-        room_id = self._get_room_id(roomname)
+    async def add_chat(self, roomname: str, username: str, message: str) -> None:
+        room_id = await self._get_room_id(roomname)
         room = self.drive.CreateFile({'id': room_id})
         updated_content = f"{room.GetContentString()}{username}:{message}\n"
         room.SetContentString(updated_content)
         room.Upload()
 
 
-    def _get_room_id(self, roomname: str) -> str:
+    async def _get_room_id(self, roomname: str) -> str:
         files = self.drive.ListFile({'q': f"title='{roomname}.room' and trashed=false"}).GetList()
         file_list = [file['id'] for file in files]
 
