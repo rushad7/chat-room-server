@@ -11,7 +11,7 @@ class ChatDrive:
         self.create_room("global")
 
 
-    def create_room(self, roomname: str, roomkey: str) -> None:
+    def create_room(self, roomname: str, roomkey=None) -> None:
         room_exists = self.room_exists(roomname)
 
         if not room_exists:
