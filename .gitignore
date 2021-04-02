@@ -130,5 +130,4 @@ dmypy.json
 
 # Credentials
 credentials.json
-settings.yaml
-client_secrets.json
+token.json
