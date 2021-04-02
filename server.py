@@ -63,8 +63,8 @@ async def login(credentials: UserCredentials) -> bool:
         return False
 
 
-@app.websocket("/chat/{room_name}/{uid}")
-async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None:   
+@app.websocket("/chat/{roomname}/{uid}")
+async def chat_websocket(websocket: WebSocket, roomname: str, uid: str) -> None:   
     
     await manager.connect(uid, websocket)
     user_access = is_valid_uid(uid)
@@ -77,7 +77,7 @@ async def chat_websocket(websocket: WebSocket, room_name: str, uid: str) -> None
                 print(message)
                 
                 await manager.broadcast_message(websocket, message)
-                await chatdrive.add_chat(room_name, username, chat)
+                await chatdrive.add_chat(roomname, username, chat)
 
         except WebSocketDisconnect:
             manager.disconnect(websocket)
@@ -93,7 +93,7 @@ async def active_users() -> str:
 async def create_room(room: Room) -> bool:
     try:
         if not chatdrive.room_exists(room.name):
-            chatdrive.create_room(room.name, room.key)
+            chatdrive.create_room(room.name, room.key, room.creator)
             print(f"Roomname: {room.name}")
             return True
     except:
