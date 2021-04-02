@@ -28,7 +28,7 @@ class ChatDrive:
                 token.write(creds.to_json())
 
         self.service = build("drive", "v3", credentials=creds)
-        self.create_room("global", "admin")
+        self.create_room("global", None, "admin")
 
 
     def get_rooms(self) -> Union[list, None]:
