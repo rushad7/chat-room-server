@@ -1,4 +1,3 @@
-from typing import Dict, Tuple
 from fastapi import WebSocket
 
 
@@ -11,15 +10,17 @@ class PairedList:
 
     def append(self, element: tuple) -> None:
         self.keys = [i[0] for i in self.pairs]
+        self.values = [i[1] for i in self.pairs]
         if element[0] not in self.keys:
             self.pairs.append(element)
         else:
-            raise ValueError(f"Pair with value {element[0]} exists")
+            key_index = self.keys.index(element[0])
+            self.values[key_index] = element[1]
+            self.pairs = list(zip(self.keys, self.values))
 
     def remove(self, key):
         self.keys = [i[0] for i in self.pairs]
         self.values = [i[1] for i in self.pairs]
-
         key_index = self.keys.index(key)
         self.keys.pop(key_index)
         self.values.pop(key_index)
@@ -28,7 +29,7 @@ class PairedList:
     def clear(self):
         self.pairs.clear()
         self.keys.clear()
-        self.pairs.clear()
+        self.values.clear()
 
     def __str__(self) -> str:
         return str(self.pairs)
