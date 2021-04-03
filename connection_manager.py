@@ -9,22 +9,18 @@ class PairedList:
         self.values = [i[1] for i in self.pairs]
 
     def append(self, element: tuple) -> None:
-        self.keys = [i[0] for i in self.pairs]
-        self.values = [i[1] for i in self.pairs]
-        self.pairs = list(zip(self.keys, self.values))
         print(f"PAIRS : {self.pairs}")
         print(f"ELEMENT TO APPEND : {element}")
         if element[0] not in self.keys:
             self.pairs.append(element)
+            self.keys = [i[0] for i in self.pairs]
+            self.values = [i[1] for i in self.pairs]
         else:
             key_index = self.keys.index(element[0])
             self.values[key_index] = element[1]
             self.pairs = list(zip(self.keys, self.values))
 
     def remove(self, key):
-        self.keys = [i[0] for i in self.pairs]
-        self.values = [i[1] for i in self.pairs]
-        self.pairs = list(zip(self.keys, self.values))
         print(f"PAIRS : {self.pairs}")
         print(f"KEY ENTERED : {key}")
         key_index = self.keys.index(key)
