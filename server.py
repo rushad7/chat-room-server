@@ -80,7 +80,7 @@ async def chat_websocket(websocket: WebSocket, roomname: str, uid: str) -> None:
                 await chatdrive.add_chat(roomname, username, chat)
 
         except WebSocketDisconnect:
-            manager.disconnect(websocket)
+            manager.disconnect(uid)
 
 
 @app.post("/active", status_code=status.HTTP_200_OK)

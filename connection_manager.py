@@ -54,7 +54,7 @@ class ConnectionManager:
         await websocket.send_text(message)
 
     async def broadcast_message(self, sender_websocket: WebSocket, message: str) -> None:
-        for connection in self.active_connections.values():
+        for connection in self.active_connections.values:
             if sender_websocket == connection:
                 continue
             else:
