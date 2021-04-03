@@ -85,7 +85,7 @@ async def chat_websocket(websocket: WebSocket, roomname: str, uid: str) -> None:
 
 @app.post("/active", status_code=status.HTTP_200_OK)
 async def active_users() -> str:
-    users_active =  list(manager.active_connections.keys())
+    users_active = manager.active_connections.keys
     return {"active_users": users_active}
 
 

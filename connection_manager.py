@@ -6,6 +6,8 @@ class PairedList:
 
     def __init__(self, *elements: tuple) -> None:
         self.pairs = list(elements)
+        self.keys = [i[0] for i in self.pairs]
+        self.values = [i[1] for i in self.pairs]
 
     def append(self, element: tuple) -> None:
         self.keys = [i[0] for i in self.pairs]
