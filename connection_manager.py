@@ -11,6 +11,9 @@ class PairedList:
     def append(self, element: tuple) -> None:
         self.keys = [i[0] for i in self.pairs]
         self.values = [i[1] for i in self.pairs]
+        self.pairs = list(zip(self.keys, self.values))
+        print(f"PAIRS : {self.pairs}")
+        print(f"ELEMENT TO APPEND : {element}")
         if element[0] not in self.keys:
             self.pairs.append(element)
         else:
@@ -21,6 +24,9 @@ class PairedList:
     def remove(self, key):
         self.keys = [i[0] for i in self.pairs]
         self.values = [i[1] for i in self.pairs]
+        self.pairs = list(zip(self.keys, self.values))
+        print(f"PAIRS : {self.pairs}")
+        print(f"KEY ENTERED : {key}")
         key_index = self.keys.index(key)
         self.keys.pop(key_index)
         self.values.pop(key_index)
@@ -46,6 +52,7 @@ class ConnectionManager:
     async def connect(self, uid: str, websocket: WebSocket) -> None:
         await websocket.accept()
         self.active_connections.append((uid, websocket))
+        print(f"INFO : {uid} connected via {websocket}")
 
     def disconnect(self, uid: str) -> None:
         self.active_connections.remove(uid)
