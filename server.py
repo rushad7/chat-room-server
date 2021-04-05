@@ -37,7 +37,7 @@ def is_valid_uid(uid: str) -> bool:
         logger.error(f"Users lookup: User with UID = '{uid}' does not exist")
         return False
     else:
-        logger.info(f"Users lookup: User with UID = '{uid}' exists")
+        logger.debug(f"Users lookup: User with UID = '{uid}' exists")
         return True
 
 
@@ -98,7 +98,7 @@ async def chat_websocket(websocket: WebSocket, roomname: str, uid: str) -> None:
                 await manager.broadcast_message(websocket, message)
                 await chatdrive.add_chat(roomname, username, chat)
 
-                logger.info(f"Message revieved: User with UID = '{uid}' to Room '{roomname}'")
+                logger.info(f"Message: User with UID = '{uid}' to Room '{roomname}'")
 
         except WebSocketDisconnect:
             manager.disconnect(uid)
@@ -108,7 +108,7 @@ async def chat_websocket(websocket: WebSocket, roomname: str, uid: str) -> None:
 @app.post("/active", status_code=status.HTTP_200_OK)
 async def active_users() -> str:
     users_active = manager.active_connections.keys
-    logger.info("Active users lookup")
+    logger.debug("Active users lookup")
     return {"active_users": users_active}
 
 
@@ -117,6 +117,8 @@ async def create_room(room: Room) -> bool:
     try:
         if not chatdrive.room_exists(room.name):
             chatdrive.create_room(room.name, room.key, room.creator)
+            query = Query.create_room(room.name, room.key, room.creator)
+            db.execute_query(query)
             logger.info(f"Room '{room.name}' created")
             return True
     except:
