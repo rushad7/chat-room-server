@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import Union
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -49,12 +50,14 @@ class ChatDrive:
             roomname_list.append(item["name"])
 
         if not items:
+            self.logger.error("Rooms fetch failed")
             return None
         else:
+            self.logger.debug("Romms fetched")
             return roomname_list
 
 
-    def get_room_id(self, roomname) -> Union[str, None]:
+    def get_room_id(self, roomname: str) -> Union[str, None]:
 
         results = self.service.files().list(q=f"name='{roomname}.room' and trashed=false",
                                             fields="nextPageToken, files(id, name)").execute()
@@ -68,11 +71,11 @@ class ChatDrive:
             self.logger.error(f"Room ID lookup: Room '{roomname}' does not exist")
             return None
         else:
-            self.logger.info(f"Room ID lookup: Room '{roomname}' exists")
+            self.logger.debug(f"Room ID lookup: Room '{roomname}' exists")
             return roomid_list[0]
 
 
-    def room_exists(self, roomname: str):
+    def room_exists(self, roomname: str) -> bool:
 
         rooms_list = self.get_rooms()
 
@@ -81,7 +84,7 @@ class ChatDrive:
                 rooms_unique = list(set(rooms_list))
 
                 if rooms_list == rooms_unique:
-                    self.logger.info(f"Room lookup: Room '{roomname}' exists")
+                    self.logger.debug(f"Room lookup: Room '{roomname}' exists")
                     return True
                 else:
                     self.logger.error(f"Room lookup: Room '{roomname}' does not exist")
@@ -111,7 +114,8 @@ class ChatDrive:
         if room_id is not None:
             content_bytes: bytes = self.service.files().get_media(fileId=room_id).execute()
             content_str = content_bytes.decode("utf-8")
-            message = f"{username}:{chat}"
+            datetime_str = str(datetime.now()) 
+            message = f"{datetime_str} {username}:{chat}"
             updated_content = f"{content_str}{message}\n"
             file_metadata = {"name": f"{roomname}.room"}
 
@@ -128,8 +132,8 @@ class ChatDrive:
 
             del(media_body)
             os.remove(f"{roomname}.room")
-            self.logger.info(f"Chat added to room '{roomname}'")
+            self.logger.debug(f"Chat added to room '{roomname}'")
             return True
         else:
-            self.logger.info(f"Failed to add chat too Room {roomname}")
+            self.logger.error(f"Failed to add chat too Room {roomname}")
             return False
