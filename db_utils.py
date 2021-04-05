@@ -1,3 +1,4 @@
+from logger import Logger
 from typing import List, Dict
 import psycopg2
 from psycopg2 import OperationalError
@@ -6,51 +7,47 @@ from psycopg2 import OperationalError
 class DataBase:
 
     def __init__(self, db_url: str) -> None:
-        connection = None
+
+        self.logger = Logger("CHATROOM-SERVER-LOG", "chatroom_server.log")
+        self.connection = None
+
         try:
-            connection = psycopg2.connect(db_url, sslmode='require')
-            print("Connection to Database successful")
+            self.connection = psycopg2.connect(db_url, sslmode='require')
+            self.logger.info("Connection to Database successful")
         except OperationalError as e:
-            print(e)
-
-        self.connection = connection
+            self.logger.error(e)
 
 
-    def execute_query(self, query: str, logging_message=None) -> None:
+    def execute_query(self, query: str) -> None:
+
         self.connection.autocommit = True
         cursor = self.connection.cursor()
+
         try:
             cursor.execute(query)
-            if logging_message == None:
-                print("Query executed successfully")
-            else:
-                print(f"DATABASE LOG: {logging_message}")
+            self.logger.debug("Query executed successfully")
         except OperationalError as e:
-            print(e)
+            self.logger.error(e)
 
 
-    def read_execute_query(self, query: str, logging_message=None) -> List[tuple]:
+    def read_execute_query(self, query: str) -> List[tuple]:
+
         cursor = self.connection.cursor()
         result = None
+        
         try:
             cursor.execute(query)
             result = cursor.fetchall()
-
-            if logging_message == None:
-                print("Query executed successfully")
-            else:
-                print(f"DATABASE LOG: {logging_message}")
-
+            self.logger.debug("Query executed, and data returned successfully")
             return result
         except OperationalError as e:
-            print(e)
+            self.logger.error(e)
 
 
 class Query:
 
     @staticmethod
     def add_user(uid: str, username: str, password: str) -> str:
-        print("User added successfully")
         return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
 
 
