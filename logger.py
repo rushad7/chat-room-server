@@ -6,6 +6,7 @@ class Logger:
     def __init__(self, logger_name: str, file: str, level=logging.DEBUG) -> None:
 
         self._log = logging.getLogger(logger_name)
+        self._log.propagate = False
         self._log.setLevel(level)
         
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -42,6 +43,5 @@ class Logger:
 
 
     def _exit(self):
-        for handler in self._log.handlers:
-            handler.close()
-            self._log.removeFilter(handler)
+        if self._log.hasHandlers():
+            self._log.handlers.clear()
