@@ -1,7 +1,8 @@
-from logger import Logger
+from datetime import datetime
 from typing import List, Dict
 import psycopg2
-from psycopg2 import OperationalError
+
+from logger import Logger
 
 
 class DataBase:
@@ -14,9 +15,8 @@ class DataBase:
         try:
             self.connection = psycopg2.connect(db_url, sslmode='require')
             self.logger.info("Connection to Database successful")
-        except OperationalError as e:
-            self.logger.error(e)
-
+        except:
+            self.logger.error("Failed to connect to Data Base")
 
     def execute_query(self, query: str) -> None:
 
@@ -26,22 +26,21 @@ class DataBase:
         try:
             cursor.execute(query)
             self.logger.debug("Query executed successfully")
-        except OperationalError as e:
-            self.logger.error(e)
-
+        except:
+            self.logger.error("Failed to exeute query")
 
     def read_execute_query(self, query: str) -> List[tuple]:
 
         cursor = self.connection.cursor()
         result = None
-        
+
         try:
             cursor.execute(query)
             result = cursor.fetchall()
             self.logger.debug("Query executed, and data returned successfully")
             return result
-        except OperationalError as e:
-            self.logger.error(e)
+        except:
+            self.logger.error("Failed to execute query, no data returned")
 
 
 class Query:
@@ -49,7 +48,6 @@ class Query:
     @staticmethod
     def add_user(uid: str, username: str, password: str) -> str:
         return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
-
 
     @staticmethod
     def create_table(table_name: str, **columns: Dict[str, str]) -> str:
@@ -60,3 +58,7 @@ class Query:
 
         query = query[:-2] + " );"
         return query
+
+    @staticmethod
+    def create_room(roomname: str, roomkey: str, creator: str) -> str:
+        return f"INSERT INTO rooms (roomname, roomkey, creator, datetime) VALUES ('{roomname}'', '{roomkey}'', '{creator}', '{str(datetime.now())}'');"
