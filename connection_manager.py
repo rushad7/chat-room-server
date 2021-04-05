@@ -22,20 +22,20 @@ class PairedList:
             self.pairs = list(zip(self.keys, self.values))
 
 
-    def remove(self, key):
+    def remove(self, key) -> None:
         key_index = self.keys.index(key)
         self.keys.pop(key_index)
         self.values.pop(key_index)
         self.pairs = list(zip(self.keys, self.values))
 
 
-    def clear(self):
+    def clear(self) -> None:
         self.pairs.clear()
         self.keys.clear()
         self.values.clear()
 
 
-    def get(self, key):
+    def get(self, key) -> WebSocket :
         key_index = self.keys.index(key)
         return self.values[key_index]
 
