@@ -6,12 +6,16 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaFileUpload
 
+from logger import Logger
+
 
 class ChatDrive:
 
     def __init__(self) -> None:
 
         creds = None
+        self.logger = Logger("CHATROOM-SERVER-LOG", "chatroom_server.log")
+
         if os.path.exists("token.json"):
             SCOPES = ["https://www.googleapis.com/auth/drive"]
             creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -19,6 +23,8 @@ class ChatDrive:
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
+                self.logger.debug("Google Drive access refreshed")
+                
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
                     "credentials.json", SCOPES)
@@ -29,9 +35,11 @@ class ChatDrive:
 
         self.service = build("drive", "v3", credentials=creds)
         self.create_room("global", None, "admin")
+        self.logger.info("Drive Initialised")
 
 
     def get_rooms(self) -> Union[list, None]:
+        
         results = self.service.files().list(q="trashed=false",
                                             fields="nextPageToken, files(id, name)").execute()
         items = results.get("files", [])
@@ -47,6 +55,7 @@ class ChatDrive:
 
 
     def get_room_id(self, roomname) -> Union[str, None]:
+
         results = self.service.files().list(q=f"name='{roomname}.room' and trashed=false",
                                             fields="nextPageToken, files(id, name)").execute()
         items = results.get("files", [])
@@ -56,31 +65,43 @@ class ChatDrive:
             roomid_list.append(item["id"])
 
         if not items:
+            self.logger.error(f"Room ID lookup: Room '{roomname}' does not exist")
             return None
         else:
+            self.logger.info(f"Room ID lookup: Room '{roomname}' exists")
             return roomid_list[0]
 
 
     def room_exists(self, roomname: str):
+
         rooms_list = self.get_rooms()
+
         if rooms_list is not None:
             if f"{roomname}.room" in rooms_list:
                 rooms_unique = list(set(rooms_list))
 
                 if rooms_list == rooms_unique:
+                    self.logger.info(f"Room lookup: Room '{roomname}' exists")
                     return True
                 else:
+                    self.logger.error(f"Room lookup: Room '{roomname}' does not exist")
                     return False
             else:
+                self.logger.error(f"Room lookup: Room '{roomname}' does not exist")
                 return False
         else:
+            self.logger.error(f"Room lookup: Room '{roomname}' does not exist")
             return False
 
 
     def create_room(self, roomname: str, roomkey: str, username: str) -> None:
+
         if not self.room_exists(roomname):
             file_metadata = {"name": f"{roomname}.room"}
             self.service.files().create(body=file_metadata, fields="id").execute()
+            self.logger.info(f"Room '{roomname}' created")
+        else:
+            self.logger.warning(f"Room '{roomname}' already exists, not created")
 
 
     async def add_chat(self, roomname: str, username: str, chat: str) -> bool:
@@ -107,6 +128,8 @@ class ChatDrive:
 
             del(media_body)
             os.remove(f"{roomname}.room")
+            self.logger.info(f"Chat added to room '{roomname}'")
             return True
         else:
+            self.logger.info(f"Failed to add chat too Room {roomname}")
             return False
