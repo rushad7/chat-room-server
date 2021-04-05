@@ -6,34 +6,46 @@ from db_utils import DataBase, Query
 from data_models import UserCredentials, Room
 from connection_manager import ConnectionManager
 from drive import ChatDrive
+from logger import Logger
 
-
-app = FastAPI()
-manager = ConnectionManager()
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
+app = FastAPI()
+chatdrive = ChatDrive()
 db = DataBase(DATABASE_URL)
+manager = ConnectionManager()
+logger = Logger("CHATROOM-SERVER-LOG", "chatroom_server.log")
+
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
     "password": "TEXT NOT NULL"})
+db.execute_query(create_user_table_query)
+logger.info("Users table created")
 
-db.execute_query(create_user_table_query, logging_message="Created users table")
+create_room_table_query = Query.create_table("rooms", **{"roomname": "TEXT NOT NULL", \
+    "roomkey": "TEXT NOT NULL", "creator": "TEXT NOT NULL", "datetime": "TEXT NOT NULL"})
+db.execute_query(create_room_table_query)
+logger.info("Rooms table created")
 
-chatdrive = ChatDrive()
 
 def is_valid_uid(uid: str) -> bool:
     query = f"SELECT uid FROM users WHERE uid='{uid}';"
-    query_response = db.read_execute_query(query, logging_message="User Verfication")
+    query_response = db.read_execute_query(query)
+
     if not query_response:
+        logger.error(f"Users lookup: User with UID = '{uid}' does not exist")
         return False
-    return True
+    else:
+        logger.info(f"Users lookup: User with UID = '{uid}' exists")
+        return True
 
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials) -> bool:
     try:
         query = f"SELECT uid FROM users WHERE username='{credentials.username}';"
-        query_response = db.read_execute_query(query, logging_message="User lookup")
+        query_response = db.read_execute_query(query)
         
         if query_response == []:
             uid_uname = hashlib.sha512(credentials.username.encode("UTF-8")).hexdigest().upper()
@@ -41,10 +53,14 @@ async def add_user(credentials: UserCredentials) -> bool:
             uid = uid_uname + uid_pswd
 
             query = Query.add_user(uid, credentials.username, credentials.password)
-            db.execute_query(query,logging_message="User registered")
+            db.execute_query(query)
+            logger.info(f"User signup: '{credentials.username}' registered successfully")
             return True
-        return False
+        else:
+            logger.error(f"User signup: '{credentials.username}' failed to register")
+            return False
     except:
+        logger.error(f"User signup: '{credentials.username}' failed to register")
         return False
     
 
@@ -52,14 +68,18 @@ async def add_user(credentials: UserCredentials) -> bool:
 async def login(credentials: UserCredentials) -> bool:
     try:
         query = f"SELECT password FROM users WHERE username='{credentials.username}';"
-        query_response = db.read_execute_query(query, logging_message="User lookup")
+        query_response = db.read_execute_query(query)
         user_password = query_response[0][0]
         
         if user_password == credentials.password:
+            logger.info(f"User login: '{credentials.username}' logged in successfully")
             return True
-        return False
+        else:
+            logger.error(f"User login: '{credentials.username}' failed to login")
+            return False
 
     except:
+        logger.error(f"User login: '{credentials.username}' failed to login")
         return False
 
 
@@ -74,21 +94,21 @@ async def chat_websocket(websocket: WebSocket, roomname: str, uid: str) -> None:
             while True:
                 message = await websocket.receive_text()
                 username, chat = message.split(":")[0], message.split(":")[1]
-                print(message)
                 
                 await manager.broadcast_message(websocket, message)
                 await chatdrive.add_chat(roomname, username, chat)
 
+                logger.info(f"Message revieved: User with UID = '{uid}' to Room '{roomname}'")
+
         except WebSocketDisconnect:
-            try:
-                manager.disconnect(uid)
-            except:
-                pass
+            manager.disconnect(uid)
+            logger.warning(f"User with UID = {uid} disconnected from Room '{roomname}'")
 
 
 @app.post("/active", status_code=status.HTTP_200_OK)
 async def active_users() -> str:
     users_active = manager.active_connections.keys
+    logger.info("Active users lookup")
     return {"active_users": users_active}
 
 
@@ -97,7 +117,8 @@ async def create_room(room: Room) -> bool:
     try:
         if not chatdrive.room_exists(room.name):
             chatdrive.create_room(room.name, room.key, room.creator)
-            print(f"Roomname: {room.name}")
+            logger.info(f"Room '{room.name}' created")
             return True
     except:
+        logger.error(f"Failed to create Room '{room.name}'")
         return False
