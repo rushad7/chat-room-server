@@ -61,4 +61,4 @@ class Query:
 
     @staticmethod
     def create_room(roomname: str, roomkey: str, creator: str) -> str:
-        return f"INSERT INTO rooms (roomname, roomkey, creator, datetime) VALUES ('{roomname}'', '{roomkey}'', '{creator}', '{str(datetime.now())}'');"
+        return f"INSERT INTO rooms (roomname, roomkey, creator, datetime) VALUES ('{roomname}', '{roomkey}', '{creator}', '{str(datetime.now())}');"
