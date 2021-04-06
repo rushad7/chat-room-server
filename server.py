@@ -29,6 +29,16 @@ db.execute_query(create_room_table_query)
 logger.info("Rooms table created")
 
 
+room_exists_query = Query.room_exists("global")
+query_result = db.read_execute_query(room_exists_query)
+room_exists_in_table = True if ("global",) in query_result else False
+
+if chatdrive.room_exists("global") and room_exists_in_table:
+    query = Query.create_room("global", None, "admin")
+    db.execute_query(query)
+    chatdrive.create_room("global")
+
+
 def is_valid_uid(uid: str) -> bool:
     query = f"SELECT uid FROM users WHERE uid='{uid}';"
     query_response = db.read_execute_query(query)
