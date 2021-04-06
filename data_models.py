@@ -7,5 +7,4 @@ class UserCredentials(BaseModel):
 
 class Room(BaseModel):
     name: str
-    key: str
     creator: str
