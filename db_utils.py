@@ -62,3 +62,7 @@ class Query:
     @staticmethod
     def create_room(roomname: str, roomkey: str, creator: str) -> str:
         return f"INSERT INTO rooms (roomname, roomkey, creator, datetime) VALUES ('{roomname}', '{roomkey}', '{creator}', '{str(datetime.now())}');"
+
+    @staticmethod
+    def room_exists(roomname: str):
+        return f"SELECT roomname FROM rooms WHERE roomname='{roomname}';"
