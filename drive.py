@@ -35,7 +35,6 @@ class ChatDrive:
                 token.write(creds.to_json())
 
         self.service = build("drive", "v3", credentials=creds)
-        self.create_room("global", None, "admin")
         self.logger.info("Drive Initialised")
 
 
@@ -97,7 +96,7 @@ class ChatDrive:
             return False
 
 
-    def create_room(self, roomname: str, roomkey: str, username: str) -> None:
+    def create_room(self, roomname: str) -> None:
 
         if not self.room_exists(roomname):
             file_metadata = {"name": f"{roomname}.room"}
