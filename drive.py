@@ -136,3 +136,11 @@ class ChatDrive:
         else:
             self.logger.error(f"Failed to add chat too Room {roomname}")
             return False
+
+
+    def delete_room(self, roomname: str) -> None:
+        try:
+            room_id = self.get_room_id(roomname)
+            self.service.files().delete(fileId=room_id).execute()
+        except:
+            self.logger.error(f"Failed to delete room '{roomname}'")
