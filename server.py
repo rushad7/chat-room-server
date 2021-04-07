@@ -30,7 +30,7 @@ create_room_table_query = Query.create_table("rooms", **{"roomname": "TEXT NOT N
 db.execute_query(create_room_table_query)
 logger.info("Rooms table created")
 
-room_manager.create_room("global")
+room_manager.create_room("global", "admin")
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials) -> bool:
