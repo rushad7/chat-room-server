@@ -46,10 +46,6 @@ class DataBase:
 class Query:
 
     @staticmethod
-    def add_user(uid: str, username: str, password: str) -> str:
-        return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
-
-    @staticmethod
     def create_table(table_name: str, **columns: Dict[str, str]) -> str:
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id SERIAL, "
 
@@ -59,10 +55,64 @@ class Query:
         query = query[:-2] + " );"
         return query
 
-    @staticmethod
-    def create_room(roomname: str, roomkey: str, creator: str) -> str:
-        return f"INSERT INTO rooms (roomname, roomkey, creator, datetime) VALUES ('{roomname}', '{roomkey}', '{creator}', '{str(datetime.now())}');"
 
     @staticmethod
-    def room_exists(roomname: str):
+    def user_signup(uid: str, username: str, password: str) -> str:
+        return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
+
+
+    @staticmethod
+    def get_uid(username: str) -> str:
+        return f"SELECT uid FROM users WHERE username='{username}';"
+
+
+    @staticmethod
+    def get_username(uid: str) -> str:
+        return f"SELECT username FROM users WHERE uid='{uid}'"
+
+
+    @staticmethod
+    def get_password(username: str) -> str:
+        return f"SELECT password FROM users WHERE username='{username}';"
+
+
+    @staticmethod
+    def create_room(roomname: str, creator: str) -> str:
+        return f"INSERT INTO rooms (roomname, admins, datetime, members) VALUES ('{roomname}', '{creator}', '{str(datetime.now())}', '{str([creator])}');"
+
+
+    @staticmethod
+    def room_exists(roomname: str) -> str:
         return f"SELECT roomname FROM rooms WHERE roomname='{roomname}';"
+
+
+    @staticmethod
+    def delete_room(roomname: str) -> str:
+        return f"DELETE FROM rooms WHERE roomname='{roomname}';"
+
+
+    @staticmethod
+    def get_room_members(roomname: str) -> str:
+        return f"SELECT members FROM rooms WHERE roomname='{roomname}';"
+
+
+    @staticmethod
+    def get_room_admins(roomname: str) -> str:
+        return f"SELECT admins FROM rooms WHERE roomname='{roomname}';"
+
+
+    @staticmethod
+    def add_member(roomname: str, username: str, existing_members: list) -> str:
+        members = str(existing_members.append(username))
+        return f"UPDATE rooms SET members = '{members}' WHERE roomname='{roomname}';"
+
+
+    @staticmethod
+    def modify_privileges(roomname: str, username: str, change_role_to: str, existing_admins: list) -> str:
+
+        if change_role_to == "admin":
+            admins = str(existing_admins.append(username))
+        elif change_role_to == "member":
+            admins = str(existing_admins.remove(username))
+        
+        return f"UPDATE rooms SET admins = '{admins}' WHERE roomname='{roomname}';"
