@@ -72,7 +72,7 @@ class Query:
 
     @staticmethod
     def get_username(uid: str) -> str:
-        return f"SELECT username FROM users WHERE uid='{uid}'"
+        return f"SELECT username FROM users WHERE uid='{uid}';"
 
 
     @staticmethod
