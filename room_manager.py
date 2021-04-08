@@ -76,10 +76,10 @@ class RoomManager:
 
             if room_exists:
                 get_members_query = Query.get_room_members(roomname)
-                room_members = self.db.read_execute_query(get_members_query)
-                room_members = list(set(eval(room_members[0][0])))
+                room_members: str = self.db.read_execute_query(get_members_query)[0][0]
+                room_members_list = room_members.split()
 
-                if username in room_members:
+                if username in room_members_list:
                     self.logger.warning(f"User '{username}' is already a part of room {roomname}")
                     return False
 
@@ -105,10 +105,10 @@ class RoomManager:
 
             if room_exists:
                 get_admins_query = Query.get_room_admins(roomname)
-                room_admins = self.db.read_execute_query(get_admins_query)
-                room_admins = list(set(eval(room_admins[0][0])))
+                room_admins: str = self.db.read_execute_query(get_admins_query)[0][0]
+                room_admins_list = room_admins.split()
 
-                if (username in room_admins) and change_role_to == "admin":
+                if (username in room_admins_list) and change_role_to == "admin":
                     self.logger.warning(f"User '{username}' is already an admin")
                     return False
 
@@ -140,10 +140,11 @@ class RoomManager:
 
             if room_exists:
                 get_members_query = Query.get_room_members(roomname)
-                room_members = self.db.read_execute_query(get_members_query)
-                room_members = list(set(eval(room_members[0][0])))
+                room_members: str = self.db.read_execute_query(get_members_query)[0][0]
+                room_members_list = room_members.split()
 
-                if username in room_members:
+
+                if username in room_members_list:
                     self.logger.debug(f"User with UID = '{uid}' has access to room '{roomname}'")
                     return True
                 else:
