@@ -27,7 +27,8 @@ class DataBase:
             cursor.execute(query)
             self.connection.commit()
             self.logger.debug("Query executed successfully")
-        except:
+        except Exception as e:
+            self.logger.error(e)
             self.logger.error("Failed to exeute query")
 
 
