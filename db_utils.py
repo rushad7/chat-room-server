@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import List, Dict
 import psycopg2
@@ -82,8 +83,8 @@ class Query:
     @staticmethod
     def create_room(roomname: str, creator: str) -> str:
         datetime_stamp = str(datetime.now())
-        members = str([creator])
-        return f"INSERT INTO rooms (roomname, admins, datetime, members) VALUES ('{roomname}', '{creator}', '{datetime_stamp}', '{members}');"
+        creator = f"{creator} "
+        return f"INSERT INTO rooms (roomname, admins, datetime, members) VALUES ('{roomname}', '{creator}', '{datetime_stamp}', '{creator}');"
 
 
     @staticmethod
@@ -107,17 +108,16 @@ class Query:
 
 
     @staticmethod
-    def add_member(roomname: str, username: str, existing_members: list) -> str:
-        members = str(existing_members.append(username))
+    def add_member(roomname: str, username: str, existing_members: str) -> str:
+        members = f"{existing_members}{username} "
         return f"UPDATE rooms SET members = '{members}' WHERE roomname='{roomname}';"
 
 
     @staticmethod
-    def modify_privileges(roomname: str, username: str, change_role_to: str, existing_admins: list) -> str:
-
+    def modify_privileges(roomname: str, username: str, change_role_to: str, existing_admins: str) -> str:
         if change_role_to == "admin":
-            admins = str(existing_admins.append(username))
+            admins = f"{existing_admins}{username} "
         elif change_role_to == "member":
-            admins = str(existing_admins.remove(username))
+            admins = re.sub(rf'\b{username} \b', "", existing_admins)
         
         return f"UPDATE rooms SET admins = '{admins}' WHERE roomname='{roomname}';"
