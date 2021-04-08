@@ -135,7 +135,7 @@ class RoomManager:
 
         #try:
         room_exists = self.room_exists(roomname)
-        get_username_query = Query.get_uid(uid)
+        get_username_query = Query.get_username(uid)
         print(self.db.read_execute_query(get_username_query))
         username = self.db.read_execute_query(get_username_query)[0][0]
 
