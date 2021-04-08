@@ -78,7 +78,9 @@ class Query:
 
     @staticmethod
     def create_room(roomname: str, creator: str) -> str:
-        return f"INSERT INTO rooms (roomname, admins, datetime, members) VALUES ('{roomname}', '{creator}', '{str(datetime.now())}', '{str([creator])}');"
+        datetime_stamp = str(datetime.now())
+        members = str([creator])
+        return f"INSERT INTO rooms (roomname, admins, datetime, members) VALUES ('{roomname}', '{creator}', '{datetime_stamp}', '{members}');"
 
 
     @staticmethod
