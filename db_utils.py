@@ -18,16 +18,18 @@ class DataBase:
         except:
             self.logger.error("Failed to connect to Data Base")
 
+
     def execute_query(self, query: str) -> None:
 
-        self.connection.autocommit = True
         cursor = self.connection.cursor()
 
         try:
             cursor.execute(query)
+            self.connection.commit()
             self.logger.debug("Query executed successfully")
         except:
             self.logger.error("Failed to exeute query")
+
 
     def read_execute_query(self, query: str) -> List[tuple]:
 
