@@ -133,27 +133,27 @@ class RoomManager:
 
     def has_access(self, roomname: str, uid: str) -> bool:
 
-        try:
-            room_exists = self.room_exists(roomname)
-            get_username_query = Query.get_uid(uid)
-            username = self.db.read_execute_query(get_username_query)[0][0]
+        #try:
+        room_exists = self.room_exists(roomname)
+        get_username_query = Query.get_uid(uid)
+        username = self.db.read_execute_query(get_username_query)[0][0]
 
-            if room_exists:
-                get_members_query = Query.get_room_members(roomname)
-                room_members: str = self.db.read_execute_query(get_members_query)[0][0]
-                room_members_list = room_members.split()
+        if room_exists:
+            get_members_query = Query.get_room_members(roomname)
+            room_members: str = self.db.read_execute_query(get_members_query)[0][0]
+            room_members_list = room_members.split()
 
 
-                if username in room_members_list:
-                    self.logger.debug(f"User with UID = '{uid}' has access to room '{roomname}'")
-                    return True
-                else:
-                    self.logger.error(f"User with UID = '{uid}' does not have access to room '{roomname}'")
-                    return False
+            if username in room_members_list:
+                self.logger.debug(f"User with UID = '{uid}' has access to room '{roomname}'")
+                return True
             else:
-                self.logger.error(f"Room '{roomname}' does not exist")
+                self.logger.error(f"User with UID = '{uid}' does not have access to room '{roomname}'")
                 return False
-
-        except:
-            self.logger.error(f"Failed to verify room access")
+        else:
+            self.logger.error(f"Room '{roomname}' does not exist")
             return False
+
+        #except:
+            #self.logger.error(f"Failed to verify room access")
+            #return False
