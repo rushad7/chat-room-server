@@ -1,6 +1,7 @@
 # pylint: disable=no-name-in-module
 # pylint: disable=no-self-argument
 
+from typing import Union
 from pydantic import BaseModel
 
 
@@ -20,3 +21,13 @@ class Room(BaseModel):
     
     name: str
     creator: str
+
+
+class JoinRoom(BaseModel):
+
+    """ Class for data modelling of room joining
+    """
+
+    roomname: str
+    username: str
+    description: Union[str, None]
