@@ -6,7 +6,14 @@ from logger import Logger
 
 class RoomManager:
 
+    """ Room Manager class
+    """
+
     def __init__(self) -> None:
+
+        """ Initialises Room Manager
+        """
+
         DATABASE_URL = os.environ.get('DATABASE_URL')
         self.db = DataBase(DATABASE_URL)
         self.chatdrive = ChatDrive()
@@ -14,6 +21,13 @@ class RoomManager:
 
 
     def room_exists(self, roomname: str) -> bool:
+        
+        """ Checks if room exists
+        Args:
+            roomname (str): Name of the room for verification
+        Returns:
+            bool: True if room exists, False if it does not
+        """
 
         room_exists_query = Query.room_exists(roomname)
         query_result = self.db.read_execute_query(room_exists_query)
@@ -32,6 +46,14 @@ class RoomManager:
 
 
     def create_room(self, roomname: str, creator: str) -> bool:
+        
+        """ Create a Room
+        Args:
+            roomname (str): Name of the room to be created
+            creator (str): Creator/Author/Owner(s) of the room
+        Returns:
+            bool: True if successfully created, False if not created
+        """
 
         try:
             room_exists = self.room_exists(roomname)
@@ -52,6 +74,13 @@ class RoomManager:
 
     def delete_room(self, roomname: str) -> bool:
         
+        """ Delete room
+        Args:
+            roomname (str): Name of the room to delete
+        Returns:
+            bool: True if successfully deleted, False if not deleted
+        """
+
         try:
             room_exists = self.room_exists(roomname)
 
@@ -70,6 +99,14 @@ class RoomManager:
 
 
     def add_member(self, roomname: str, username: str) -> bool:
+        
+        """ Add a user to the room
+        Args:
+            roomname (str): Name of the room to add user to
+            username (str): User to add to room
+        Returns:
+            bool: True if successfully added, False if not added 
+        """
 
         try:
             room_exists = self.room_exists(roomname)
@@ -99,7 +136,15 @@ class RoomManager:
 
         
     def modify_privileges(self, roomname: str, username: str, change_role_to: str) -> bool:
-
+        
+        """ Modify user privileges
+        Args:
+            roomname (str): Room whos user privileges are to be modified
+            username (str): User whos privilege is to be modiied
+            change_role_to (str): Users new/modified role
+        Returns:
+            bool: True if successfully modified, False if not modified
+        """
         try:
             room_exists = self.room_exists(roomname)
 
@@ -132,29 +177,36 @@ class RoomManager:
 
 
     def has_access(self, roomname: str, uid: str) -> bool:
+        
+        """ Check if user has access to a room
+        Args:
+            roomname (str): Name of the room to verify
+            uid (str): UID of the user to verify
+        Returns:
+            bool: True if user has access, False if user does not have access
+        """
 
-        #try:
-        room_exists = self.room_exists(roomname)
-        get_username_query = Query.get_username(uid)
-        print(self.db.read_execute_query(get_username_query))
-        username = self.db.read_execute_query(get_username_query)[0][0]
+        try:
+            room_exists = self.room_exists(roomname)
+            get_username_query = Query.get_username(uid)
+            username = self.db.read_execute_query(get_username_query)[0][0]
 
-        if room_exists:
-            get_members_query = Query.get_room_members(roomname)
-            room_members: str = self.db.read_execute_query(get_members_query)[0][0]
-            room_members_list = room_members.split()
+            if room_exists:
+                get_members_query = Query.get_room_members(roomname)
+                room_members: str = self.db.read_execute_query(get_members_query)[0][0]
+                room_members_list = room_members.split()
 
 
-            if username in room_members_list:
-                self.logger.debug(f"User with UID = '{uid}' has access to room '{roomname}'")
-                return True
+                if username in room_members_list:
+                    self.logger.debug(f"User with UID = '{uid}' has access to room '{roomname}'")
+                    return True
+                else:
+                    self.logger.error(f"User with UID = '{uid}' does not have access to room '{roomname}'")
+                    return False
             else:
-                self.logger.error(f"User with UID = '{uid}' does not have access to room '{roomname}'")
+                self.logger.error(f"Room '{roomname}' does not exist")
                 return False
-        else:
-            self.logger.error(f"Room '{roomname}' does not exist")
-            return False
 
-        #except:
-            #self.logger.error(f"Failed to verify room access")
-            #return False
+        except:
+            self.logger.error(f"Failed to verify room access")
+            return False

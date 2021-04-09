@@ -1,3 +1,5 @@
+# pylint: disable=maybe-no-member
+
 import os
 from datetime import datetime
 from typing import Union
@@ -12,7 +14,13 @@ from logger import Logger
 
 class ChatDrive:
 
+    """ Handles chat message storage and retrieval
+    """
+
     def __init__(self) -> None:
+
+        """ Initialise ChatDrive 
+        """
 
         creds = None
         self.logger = Logger("CHATROOM-SERVER-LOG", "chatroom_server.log")
@@ -39,6 +47,11 @@ class ChatDrive:
 
 
     def get_rooms(self) -> Union[list, None]:
+
+        """ Returns a list of all the rooms
+        Returns:
+            Union[list, None]: List of all the rooms or None
+        """
         
         results = self.service.files().list(q="trashed=false",
                                             fields="nextPageToken, files(id, name)").execute()
@@ -58,6 +71,13 @@ class ChatDrive:
 
     def get_room_id(self, roomname: str) -> Union[str, None]:
 
+        """ Returns room ID given room name
+        Args:
+            roomname (str): Name of the room for ID lookup
+        Returns:
+            Union[str, None]: String containing room ID or None
+        """
+
         results = self.service.files().list(q=f"name='{roomname}.room' and trashed=false",
                                             fields="nextPageToken, files(id, name)").execute()
         items = results.get("files", [])
@@ -75,6 +95,13 @@ class ChatDrive:
 
 
     def room_exists(self, roomname: str) -> bool:
+        
+        """ Check if room exists
+        Args:
+            roomname (str): Name of the room to check
+        Returns:
+            bool: True if it exists, False if it does not
+        """
 
         rooms_list = self.get_rooms()
 
@@ -98,6 +125,11 @@ class ChatDrive:
 
     def create_room(self, roomname: str) -> None:
 
+        """ Creates new room if room doesnt already exist
+        Args:
+            roomname (str): Name of the room to create
+        """
+
         if not self.room_exists(roomname):
             file_metadata = {"name": f"{roomname}.room"}
             self.service.files().create(body=file_metadata, fields="id").execute()
@@ -107,6 +139,15 @@ class ChatDrive:
 
 
     async def add_chat(self, roomname: str, username: str, chat: str) -> bool:
+
+        """ Add chat to room
+        Args:
+            roomname (str): Name of room to add message to
+            username (str): Corresponding username
+            chat (str): Message to add
+        Returns:
+            bool: True if added successfully, False if not
+        """
 
         room_id = self.get_room_id(roomname)
 
@@ -139,6 +180,12 @@ class ChatDrive:
 
 
     def delete_room(self, roomname: str) -> None:
+
+        """ Delete a room
+        Args:
+            roomname (str): Name of the room to be deleted 
+        """
+        
         try:
             room_id = self.get_room_id(roomname)
             self.service.files().delete(fileId=room_id).execute()
