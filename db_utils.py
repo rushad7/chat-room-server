@@ -248,3 +248,32 @@ class Query:
             admins = re.sub(rf'\b{username} \b', "", existing_admins)
         
         return f"UPDATE rooms SET admins = '{admins}' WHERE roomname='{roomname}';"
+
+
+    @staticmethod
+    def get_pending_requests(roomname: str) -> str:
+
+        """ Returns query for listing pending requests
+        Args:
+            roomname (str): Name of the room for pending request lookup
+        Returns:
+            str: Query for listing pending requests
+        """
+
+        return f"SELECT pending_requests from rooms WHERE roomname='{roomname}';"
+
+
+    @staticmethod
+    def room_request(roomname: str, username: str, existing_requests) -> str:
+
+        """ Returns query for requesting room access
+        Args:
+            roomname (str): Name of the room to which access to needed
+            username (str): Corresponding username
+            existing_requests ([type]): Existing pending requests (Return value of get_pending_requests)
+        Returns:
+            str: Query for requesting room access
+        """
+        
+        requests = f"{existing_requests}{username} "
+        return f"UPDATE rooms SET pending_requests = '{requests}' WHERE roomname='{roomname}';"
