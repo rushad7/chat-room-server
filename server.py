@@ -32,6 +32,12 @@ logger.info("Rooms table created")
 
 room_manager.create_room("global", "admin")
 
+
+@app.get("/ping", status_code=status.HTTP_200_OK)
+async def ping() -> bool:
+    return True
+
+
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
 async def add_user(credentials: UserCredentials) -> bool:
     try:
