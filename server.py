@@ -3,7 +3,7 @@ import hashlib
 from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
 from db_utils import DataBase, Query 
-from data_models import UserCredentials, Room
+from data_models import JoinRoom, UserCredentials, Room
 from connection_manager import ConnectionManager
 from room_manager import RoomManager
 from drive import ChatDrive
@@ -26,7 +26,7 @@ db.execute_query(create_user_table_query)
 logger.info("Users table created")
 
 create_room_table_query = Query.create_table("rooms", **{"roomname": "TEXT NOT NULL", \
-    "admins": "TEXT NOT NULL", "datetime": "TEXT NOT NULL", "members": "TEXT NOT NULL"})
+    "admins": "TEXT NOT NULL", "datetime": "TEXT NOT NULL", "members": "TEXT NOT NULL", "pending_requests": "TEXT"})
 db.execute_query(create_room_table_query)
 logger.info("Rooms table created")
 
@@ -113,3 +113,16 @@ async def active_users() -> str:
 async def create_room(room: Room) -> bool:
     room_status = room_manager.create_room(room.name, room.creator)
     return room_status
+
+
+@app.post("/join-room", status_code=status.HTTP_200_OK)
+async def join_room(room: JoinRoom):
+    try:
+        get_pending_requests_query = Query.get_pending_requests(room.username)
+        pending_requests: str = db.read_execute_query(get_pending_requests_query)[0][0]
+        room_request_query = Query.room_request(room.roomname, room.username, pending_requests)
+        db.execute_query(room_request_query)
+
+    except IndexError:
+        room_request_query = Query.room_request(room.roomname, room.username, "")
+        db.execute_query(room_request_query)
