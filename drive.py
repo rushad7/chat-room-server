@@ -1,6 +1,8 @@
 # pylint: disable=maybe-no-member
 
 import os
+import json
+import requests
 from datetime import datetime
 from typing import Union
 from googleapiclient.discovery import build
@@ -23,10 +25,10 @@ class ChatDrive:
         """
 
         creds = None
+        SCOPES = ["https://www.googleapis.com/auth/drive"]
         self.logger = Logger("CHATROOM-SERVER-LOG", "chatroom_server.log")
 
         if os.path.exists("token.json"):
-            SCOPES = ["https://www.googleapis.com/auth/drive"]
             creds = Credentials.from_authorized_user_file("token.json", SCOPES)
 
         if not creds or not creds.valid:
@@ -40,6 +42,10 @@ class ChatDrive:
                 creds = flow.run_local_server()
 
             with open("token.json", "w") as token:
+                url = 'https://api.heroku.com/apps/chat-service/config-vars'
+                payload = {'TOKEN': creds.to_json()}
+                head = {'Content-Type':'application/json', 'Accept': 'application/vnd.heroku+json; version=3'}
+                requests.patch(url, data=json.dumps(payload), headers=head)
                 token.write(creds.to_json())
 
         self.service = build("drive", "v3", credentials=creds)
