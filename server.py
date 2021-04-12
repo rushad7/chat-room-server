@@ -40,7 +40,7 @@ async def ping() -> bool:
 
 
 @app.post("/signup", status_code=status.HTTP_201_CREATED)
-async def add_user(credentials: UserCredentials) -> bool:
+async def signup_user(credentials: UserCredentials) -> bool:
     try:
         query = Query.get_uid(credentials.username)
         query_response = db.read_execute_query(query)
