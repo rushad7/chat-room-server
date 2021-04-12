@@ -1,5 +1,6 @@
 import os
 import hashlib
+import re
 from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
 from db_utils import DataBase, Query 
@@ -21,12 +22,12 @@ logger = Logger("CHATROOM-SERVER-LOG", "chatroom_server.log")
 
 
 create_user_table_query = Query.create_table("users", **{"uid": "TEXT NOT NULL", "username": "TEXT NOT NULL", \
-    "password": "TEXT NOT NULL"})
+    "password": "TEXT NOT NULL", "user_of": "TEXT NOT NULL"})
 db.execute_query(create_user_table_query)
 logger.info("Users table created")
 
 create_room_table_query = Query.create_table("rooms", **{"roomname": "TEXT NOT NULL", \
-    "admins": "TEXT NOT NULL", "datetime": "TEXT NOT NULL", "members": "TEXT NOT NULL", "pending_requests": "TEXT"})
+    "admins": "TEXT NOT NULL", "datetime": "TEXT NOT NULL", "members": "TEXT NOT NULL", "pending_requests": "TEXT NOT NULL"})
 db.execute_query(create_room_table_query)
 logger.info("Rooms table created")
 
@@ -115,14 +116,15 @@ async def create_room(room: Room) -> bool:
     return room_status
 
 
-@app.post("/join-room", status_code=status.HTTP_200_OK)
-async def join_room(room: JoinRoom):
-    try:
-        get_pending_requests_query = Query.get_pending_requests(room.username)
-        pending_requests: str = db.read_execute_query(get_pending_requests_query)[0][0]
-        room_request_query = Query.room_request(room.roomname, room.username, pending_requests)
-        db.execute_query(room_request_query)
+@app.post("/join-request", status_code=status.HTTP_200_OK)
+async def join_request(room: JoinRoom):
+    room_manager.send_join_request(room.roomname, room.username)
+    
 
-    except IndexError:
-        room_request_query = Query.room_request(room.roomname, room.username, "")
-        db.execute_query(room_request_query)
+@app.post("/accept-request", status_code=status.HTTP_200_OK)
+async def accept_request(room: JoinRoom) -> bool:
+    return room_manager.evaluate_join_request(room.roomname, room.username, "accept")
+
+@app.post("/decline-request", status_code=status.HTTP_200_OK)
+async def decline_request(room: JoinRoom):
+    return room_manager.evaluate_join_request(room.roomname, room.username, "decline")
