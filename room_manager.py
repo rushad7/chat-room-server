@@ -191,6 +191,9 @@ class RoomManager:
             bool: True if user has access, False if user does not have access
         """
 
+        if roomname == 'global':
+            return True
+
         try:
             room_exists = self.room_exists(roomname)
             get_username_query = Query.get_username(uid)
