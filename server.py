@@ -4,7 +4,7 @@ import re
 from fastapi import FastAPI, status, WebSocket, WebSocketDisconnect
 
 from db_utils import DataBase, Query 
-from data_models import JoinRoom, UserCredentials, Room
+from data_models import UserCredentials, Room
 from connection_manager import ConnectionManager
 from room_manager import RoomManager
 from drive import ChatDrive
@@ -93,8 +93,8 @@ async def chat_websocket(websocket: WebSocket, roomname: str, uid: str) -> None:
                 message = await websocket.receive_text()
                 username, chat = message.split(":")[0], message.split(":")[1]
                 
-                await ws_manager.broadcast_message(websocket, message)
                 await chatdrive.add_chat(roomname, username, chat)
+                await ws_manager.broadcast_message(websocket, message)
 
                 logger.info(f"Message: User with UID = '{uid}' to Room '{roomname}'")
 
@@ -112,19 +112,25 @@ async def active_users() -> str:
 
 @app.post("/create-room", status_code=status.HTTP_200_OK)
 async def create_room(room: Room) -> bool:
-    room_status = room_manager.create_room(room.name, room.creator)
+    room_status = room_manager.create_room(room.roomname, room.username)
     return room_status
 
 
 @app.post("/join-request", status_code=status.HTTP_200_OK)
-async def join_request(room: JoinRoom):
+async def join_request(room: Room):
     room_manager.send_join_request(room.roomname, room.username)
     
 
 @app.post("/accept-request", status_code=status.HTTP_200_OK)
-async def accept_request(room: JoinRoom) -> bool:
+async def accept_request(room: Room) -> bool:
     return room_manager.evaluate_join_request(room.roomname, room.username, "accept")
 
+
 @app.post("/decline-request", status_code=status.HTTP_200_OK)
-async def decline_request(room: JoinRoom):
+async def decline_request(room: Room):
     return room_manager.evaluate_join_request(room.roomname, room.username, "decline")
+
+
+@app.post("/delete-room", status_code=status.HTTP_200_OK)
+async def delete_room(room: Room):
+    return room_manager.delete_room(room.roomname)
