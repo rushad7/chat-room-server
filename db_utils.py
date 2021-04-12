@@ -103,7 +103,7 @@ class Query:
             str: Query for user registration
         """
 
-        return f"INSERT INTO users (uid, username, password) VALUES ('{uid}', '{username}', '{password}');"
+        return f"INSERT INTO users (uid, username, password, user_of) VALUES ('{uid}', '{username}', '{password}', 'global ');"
 
 
     @staticmethod
@@ -158,7 +158,7 @@ class Query:
 
         datetime_stamp = str(datetime.now())
         creator = f"{creator} "
-        return f"INSERT INTO rooms (roomname, admins, datetime, members) VALUES ('{roomname}', '{creator}', '{datetime_stamp}', '{creator}');"
+        return f"INSERT INTO rooms (roomname, admins, datetime, members, pending_requests) VALUES ('{roomname}', '{creator}', '{datetime_stamp}', '{creator}', '');"
 
 
     @staticmethod
@@ -245,7 +245,7 @@ class Query:
         if change_role_to == "admin":
             admins = f"{existing_admins}{username} "
         elif change_role_to == "member":
-            admins = re.sub(rf'\b{username} \b', "", existing_admins)
+            admins = re.sub(rf'\b{username}\b', "", existing_admins)
         
         return f"UPDATE rooms SET admins = '{admins}' WHERE roomname='{roomname}';"
 
@@ -264,7 +264,7 @@ class Query:
 
 
     @staticmethod
-    def room_request(roomname: str, username: str, existing_requests) -> str:
+    def room_request(roomname: str, username: str, existing_requests: str) -> str:
 
         """ Returns query for requesting room access
         Args:
