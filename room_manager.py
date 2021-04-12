@@ -1,4 +1,5 @@
 import os
+import re
 from drive import ChatDrive
 from db_utils import DataBase, Query
 from logger import Logger
@@ -141,10 +142,14 @@ class RoomManager:
         Args:
             roomname (str): Room whos user privileges are to be modified
             username (str): User whos privilege is to be modiied
-            change_role_to (str): Users new/modified role
+            change_role_to (str): Users new/modified role ('admin' or 'member')
         Returns:
             bool: True if successfully modified, False if not modified
         """
+
+        if change_role_to not in ["admin", "member"]:
+            raise ValueError("Role must be either one of 'admin' or 'member'")
+
         try:
             room_exists = self.room_exists(roomname)
 
@@ -157,7 +162,7 @@ class RoomManager:
                     self.logger.warning(f"User '{username}' is already an admin")
                     return False
 
-                elif (username not in room_admins) and change_role_to == "member":
+                elif (username not in room_admins_list) and change_role_to == "member":
                     self.logger.warning(f"User '{username}'' is already a member")
                     return False
 
@@ -209,4 +214,77 @@ class RoomManager:
 
         except:
             self.logger.error(f"Failed to verify room access")
+            return False
+
+
+    def send_join_request(self, roomname: str, username: str) -> None:
+
+        """ Send a join request to the sepcified room
+        Args:
+            roomname (str): Name of the room to join
+            username (str): User that is to requesting to join
+        """
+
+        get_members_query = Query.get_room_members(roomname)
+        room_members: str = self.db.read_execute_query(get_members_query)[0][0]
+        room_members_list = room_members.split()
+
+        if username in room_members_list:
+            return
+
+        try:
+            get_pending_requests_query = Query.get_pending_requests(roomname)
+            pending_requests: str = self.db.read_execute_query(get_pending_requests_query)[0][0]
+            room_request_query = Query.room_request(roomname, username, pending_requests)
+            self.db.execute_query(room_request_query)
+
+        except IndexError:
+            room_request_query = Query.room_request(roomname, username, "")
+            self.db.execute_query(room_request_query)
+
+
+    def evaluate_join_request(self, roomname: str, username: str, action: str) -> bool:
+
+        """ Accept or Decline join request
+        Args:
+            roomname (str): Name of the room to join
+            username (str): User to evaluate
+            action (str): Action to take on join request ("accept" or "decline")
+        Returns:
+            bool: True if join request exsists, False if join request does not exsist
+        """
+
+        if action not in ["accept", "decline"]: 
+            raise ValueError("Action must be either one of 'accept' or 'decline'")
+
+        def _remove(updated_pending_requests):
+            """Remove username from pending request list"""
+            remove_member_from_pending_query = Query.room_request(roomname, "", updated_pending_requests)
+            self.db.execute_query(remove_member_from_pending_query)
+
+        def _accept():
+            """Accept the request"""
+            get_members_query = Query.get_room_members(roomname)
+            room_members: str = self.db.read_execute_query(get_members_query)[0][0]
+            add_member_query = Query.add_member(roomname, username, room_members)
+            self.db.execute_query(add_member_query)
+
+        room_exsists = self.room_exists(roomname)
+        get_pending_requests_query = Query.get_pending_requests(roomname)
+        pending_requests: str = self.db.read_execute_query(get_pending_requests_query)[0][0]
+        request_is_pending = bool(re.findall(rf'\b{username}\b', pending_requests))
+        
+        if room_exsists and request_is_pending:
+            updated_pending_requests = re.sub(rf'\b{username}\b', "", pending_requests)
+            if action == "accept":
+                _accept()
+                _remove(updated_pending_requests)
+            else:
+                _remove(updated_pending_requests)
+
+            self.logger.debug("Join request evaluated")
+            return True
+
+        else:
+            self.logger.error(f"User '{username}' has sent no request to Room {roomname}")
             return False
